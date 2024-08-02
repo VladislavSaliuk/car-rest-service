@@ -1,6 +1,7 @@
 package com.example.carrestservice.entity;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Setter
 @Table(name = "manufacturers")
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Manufacturer implements Serializable {
 
     @Id
@@ -20,7 +22,7 @@ public class Manufacturer implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long manufacturerId;
 
-    @Column(name = "manufacturer_name", unique = true)
+    @Column(name = "manufacturer_name", unique = true, nullable = false)
     private String manufacturerName;
 
     @OneToMany(mappedBy = "manufacturer")

@@ -2,9 +2,7 @@ package com.example.carrestservice.entity;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -14,6 +12,8 @@ import java.util.Set;
 @Setter
 @Table(name = "categories")
 @NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class Category implements Serializable {
 
     @Id
@@ -21,7 +21,7 @@ public class Category implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long categoryId;
 
-    @Column(name = "category_name", unique = true)
+    @Column(name = "category_name", unique = true, nullable = false)
     private String categoryName;
 
     @OneToMany(mappedBy = "category")
