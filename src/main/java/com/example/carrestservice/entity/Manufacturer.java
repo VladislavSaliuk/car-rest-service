@@ -22,10 +22,10 @@ public class Manufacturer implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long manufacturerId;
 
-    @Column(name = "manufacturer_name", unique = true, nullable = false)
+    @Column(name = "manufacturer_name", unique = true)
     private String manufacturerName;
 
-    @OneToMany(mappedBy = "manufacturer")
+    @OneToMany(mappedBy = "manufacturer", cascade = CascadeType.ALL)
     private Set<Car> cars;
     public Manufacturer(String manufacturerName) {
         this.manufacturerName = manufacturerName;

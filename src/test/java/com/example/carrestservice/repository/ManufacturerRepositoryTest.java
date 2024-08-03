@@ -82,4 +82,62 @@ public class ManufacturerRepositoryTest {
         assertTrue(expectedManufacturer.isEmpty());
     }
 
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_manufacturers.sql"})
+    void findByManufacturerName_shouldReturnManufacturer_whenInputContainsExistingManufacturerName() {
+
+        long manufacturerId = 5;
+        String manufactureName = "Mercedes-Benz";
+
+        Manufacturer expectedManufacturer = new Manufacturer();
+
+        expectedManufacturer.setManufacturerId(manufacturerId);
+        expectedManufacturer.setManufacturerName(manufactureName);
+        expectedManufacturer.setCars(Collections.emptySet());
+
+        Optional<Manufacturer> actualManufacturer = manufacturerRepository.findByManufacturerName(manufactureName);
+
+        assertTrue(actualManufacturer.isPresent());
+        assertEquals(expectedManufacturer, actualManufacturer.get());
+
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_manufacturers.sql"})
+    void findByManufacturerName_shouldReturnNull_whenInputContainsNotExistingManufacturerName() {
+        String manufactureName = "Test manufacturer name";
+        Optional<Manufacturer> actualManufacturer = manufacturerRepository.findByManufacturerName(manufactureName);
+        assertTrue(actualManufacturer.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_manufacturers.sql"})
+    void findByManufacturerName_shouldReturnNull_whenInputContainsNull() {
+        Optional<Manufacturer> actualManufacturer = manufacturerRepository.findByManufacturerName(null);
+        assertTrue(actualManufacturer.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_manufacturers.sql"})
+    void existsByManufacturerName_shouldReturnTrue_whenInputContainsExistingManufacturerName() {
+        String manufactureName = "Mercedes-Benz";
+        boolean isManufacturerNameExists = manufacturerRepository.existsByManufacturerName(manufactureName);
+        assertTrue(isManufacturerNameExists);
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_manufacturers.sql"})
+    void existsByManufacturerName_shouldReturnFalse_whenInputContainsNitExistingManufacturerName() {
+        String manufactureName = "Test manufacturer name";
+        boolean isManufacturerNameExists = manufacturerRepository.existsByManufacturerName(manufactureName);
+        assertFalse(isManufacturerNameExists);
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_manufacturers.sql"})
+    void existsByManufacturerName_shouldReturnFalse_whenInputContainsNull() {
+        boolean isManufacturerNameExists = manufacturerRepository.existsByManufacturerName(null);
+        assertFalse(isManufacturerNameExists);
+    }
+
 }

@@ -21,10 +21,10 @@ public class Category implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long categoryId;
 
-    @Column(name = "category_name", unique = true, nullable = false)
+    @Column(name = "category_name", unique = true)
     private String categoryName;
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private Set<Car> cars;
 
     public Category(String categoryName) {

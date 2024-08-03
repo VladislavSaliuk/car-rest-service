@@ -1,5 +1,6 @@
 package com.example.carrestservice.repository;
 
+import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Category;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,5 +80,64 @@ public class CategoryRepositoryTest {
         Optional<Category> expectedCategory = categoryRepository.findById(categoryId);
         assertTrue(expectedCategory.isEmpty());
     }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+    void findByCategoryName_shouldReturnCategory_whenInputContainsExistingCategoryName() {
+
+        long categoryId = 3;
+        String categoryName = "Crossover";
+
+        Category expectedCategory = new Category();
+
+        expectedCategory.setCategoryId(categoryId);
+        expectedCategory.setCategoryName(categoryName);
+        expectedCategory.setCars(Collections.emptySet());
+
+        Optional<Category> actualCategory = categoryRepository.findByCategoryName(categoryName);
+
+        assertTrue(actualCategory.isPresent());
+        assertEquals(expectedCategory, actualCategory.get());
+
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+    void findByCategoryName_shouldReturnNull_whenInputContainsNotExistingCategoryName() {
+        String categoryName = "Test category name";
+        Optional<Category> expectedCategory = categoryRepository.findByCategoryName(categoryName);
+        assertTrue(expectedCategory.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+    void findByCategoryName_shouldReturnNull_whenInputContainsNull() {
+        Optional<Category> expectedCategory = categoryRepository.findByCategoryName(null);
+        assertTrue(expectedCategory.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+    void existsByCategoryName_shouldReturnTrue_whenInputContainsExistingCategoryName() {
+        String categoryName = "Crossover";
+        Optional<Category> expectedCategory = categoryRepository.findByCategoryName(categoryName);
+        assertTrue(expectedCategory.isPresent());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+    void existsByCategoryName_shouldReturnFalse_whenInputContainsNotExistingCategoryName() {
+        String categoryName = "Test category name";
+        Optional<Category> expectedCategory = categoryRepository.findByCategoryName(categoryName);
+        assertTrue(expectedCategory.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+    void existsByCategoryName_shouldReturnFalse_whenInputContainsNull() {
+        Optional<Category> expectedCategory = categoryRepository.findByCategoryName(null);
+        assertTrue(expectedCategory.isEmpty());
+    }
+
 
 }

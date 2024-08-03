@@ -21,10 +21,10 @@ public class CarModel implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long carModelId;
 
-    @Column(name = "car_model_name", unique = true, nullable = false)
+    @Column(name = "car_model_name", unique = true)
     private String carModelName;
 
-    @OneToOne(mappedBy = "carModel")
+    @OneToOne(mappedBy = "carModel", cascade = CascadeType.ALL)
     private Car car;
 
     public CarModel(String carModelName) {

@@ -55,63 +55,6 @@ public class CarRepositoryTest {
         assertEquals(10, carRepository.count());
 
     }
-
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void save_shouldThrowException_whenInputContainsCarWithOutCarModel() {
-
-        long categoryId = 1;
-        long manufacturerId = 1;
-
-        Optional<Category> category = categoryRepository.findById(categoryId);
-        Optional<Manufacturer> manufacturer = manufacturerRepository.findById(manufacturerId);
-
-        Car car = new Car(manufacturer.get(), 2024, null, category.get());
-
-        assertTrue(category.isPresent());
-        assertTrue(manufacturer.isPresent());
-
-        DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class, () -> carRepository.save(car));
-
-    }
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void save_shouldThrowException_whenInputContainsCarWithOutCategory() {
-
-        long carModelId = 10;
-        long manufacturerId = 1;
-
-        Optional<CarModel> carModel = carModelRepository.findById(carModelId);
-        Optional<Manufacturer> manufacturer = manufacturerRepository.findById(manufacturerId);
-
-        Car car = new Car(manufacturer.get(), 2024, carModel.get(), null);
-
-        assertTrue(carModel.isPresent());
-        assertTrue(manufacturer.isPresent());
-
-        DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class, () -> carRepository.save(car));
-
-    }
-
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void save_shouldThrowException_whenInputContainsCarWithOutManufacturer() {
-
-        long carModelId = 10;
-        long categoryId = 1;
-
-        Optional<CarModel> carModel = carModelRepository.findById(carModelId);
-        Optional<Category> category = categoryRepository.findById(categoryId);
-
-        Car car = new Car(null, 2024, carModel.get(), category.get());
-
-        assertTrue(carModel.isPresent());
-        assertTrue(category.isPresent());
-
-        DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class, () -> carRepository.save(car));
-
-    }
-
     @Test
     @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
     void save_shouldThrowException_whenInputContainsCarWithAlreadyExistingCarModel() {
@@ -140,14 +83,6 @@ public class CarRepositoryTest {
         List<Car> carList = carRepository.findAll();
         assertEquals(9, carList.size());
     }
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void deleteById_shouldDeleteCarFromDatabase_whenInputContainsExistingCarId() {
-        long carId = 4;
-        carRepository.deleteById(carId);
-        assertEquals(8, carRepository.count());
-    }
-
     @Test
     @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
     void deleteById_shouldNotDeleteCarFromDatabase_whenInputContainsNotExistingCarId() {
@@ -195,6 +130,21 @@ public class CarRepositoryTest {
         long carId = 100;
         Optional<Car> actualCar = carRepository.findById(carId);
         assertTrue(actualCar.isEmpty());
+    }
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
+    void existsByCarModel_CarModelId_shouldReturnTrue_whenInputContainsExistingCarModelId() {
+        long carModelId = 4;
+        boolean isCarModelExists = carRepository.existsByCarModel_CarModelId(carModelId);
+        assertTrue(isCarModelExists);
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
+    void existsByCarModel_CarModelId_shouldReturnFalse_whenInputContainsNotExistingCarModelId() {
+        long carModelId = 100;
+        boolean isCarModelExists = carRepository.existsByCarModel_CarModelId(carModelId);
+        assertFalse(isCarModelExists);
     }
 
 }

@@ -22,19 +22,19 @@ public class Car implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long carId;
 
-    @ManyToOne
-    @JoinColumn(name = "manufacturer_id",nullable = false)
+    @ManyToOne(cascade =  CascadeType.ALL)
+    @JoinColumn(name = "manufacturer_id")
     private Manufacturer manufacturer;
 
-    @Column(name = "manufacture_year", nullable = false)
+    @Column(name = "manufacture_year")
     private int manufactureYear;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "car_model_id", referencedColumnName = "car_model_id", nullable = false)
+    @JoinColumn(name = "car_model_id", referencedColumnName = "car_model_id")
     private CarModel carModel;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     public Car(Manufacturer manufacturer, int manufactureYear, CarModel carModel, Category category) {

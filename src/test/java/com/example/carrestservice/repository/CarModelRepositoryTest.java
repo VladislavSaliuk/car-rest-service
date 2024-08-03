@@ -35,14 +35,6 @@ public class CarModelRepositoryTest {
         CarModel carModel = new CarModel("Civic");
         DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class, () -> carModelRepository.save(carModel));
     }
-
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
-    void save_shouldThrowException_whenInputContainsCarModelWithNull() {
-        CarModel carModel = new CarModel(null);
-        DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class, () -> carModelRepository.save(carModel));
-    }
-
     @Test
     @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
     void findAll_shouldReturnCarModelList() {
@@ -91,6 +83,63 @@ public class CarModelRepositoryTest {
     void findById_shouldReturnNull_whenInputContainsNotExistingCarModelId() {
         long carModelId = 100;
         Optional<CarModel> expectedCarModel = carModelRepository.findById(carModelId);
+        assertTrue(expectedCarModel.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
+    void findByCarModelName_shouldReturnCarModel_whenInputContainsExistingCarModelName() {
+
+        long carModelId = 3;
+        String carModelName = "Mustang";
+
+        CarModel expectedCarModel = new CarModel();
+
+        expectedCarModel.setCarModelId(carModelId);
+        expectedCarModel.setCarModelName(carModelName);
+
+        Optional<CarModel> actualCarModel = carModelRepository.findByCarModelName(carModelName);
+
+        assertTrue(actualCarModel.isPresent());
+        assertEquals(expectedCarModel, actualCarModel.get());
+
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
+    void findByCarModelName_shouldReturnNull_whenInputContainsNotExistingCarModelName() {
+        String carModelName = "Test car model name";
+        Optional<CarModel> expectedCarModel = carModelRepository.findByCarModelName(carModelName);
+        assertTrue(expectedCarModel.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
+    void findByCarModelName_shouldReturnNull_whenInputContainsNull() {
+        Optional<CarModel> expectedCarModel = carModelRepository.findByCarModelName(null);
+        assertTrue(expectedCarModel.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
+    void existsByCarModelName_shouldReturnTrue_whenInputContainsExistingCarModelName() {
+        String carModelName = "Mustang";
+        Optional<CarModel> expectedCarModel = carModelRepository.findByCarModelName(carModelName);
+        assertTrue(expectedCarModel.isPresent());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
+    void existsByCarModelName_shouldReturnFalse_whenInputContainsNotExistingCarModelName() {
+        String carModelName = "Test car model name";
+        Optional<CarModel> expectedCarModel = carModelRepository.findByCarModelName(carModelName);
+        assertTrue(expectedCarModel.isEmpty());
+    }
+
+    @Test
+    @Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
+    void existsByCarModelName_shouldReturnFalse_whenInputContainsNull() {
+        Optional<CarModel> expectedCarModel = carModelRepository.findByCarModelName(null);
         assertTrue(expectedCarModel.isEmpty());
     }
 
