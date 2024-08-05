@@ -8,10 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.*;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -220,7 +223,7 @@ public class CarModelServiceTest {
     }
 
     @Test
-    void getAll_shouldReturnCarModelList() {
+    void getAll_shouldReturnCarModelList_whenInputContainsNothing() {
 
         when(carModelRepository.findAll())
                 .thenReturn(Collections.emptyList());
@@ -231,6 +234,93 @@ public class CarModelServiceTest {
         assertTrue(carModelList.isEmpty());
 
         verify(carModelRepository).findAll();
+
+    }
+
+    @Test
+    void getAll_shouldReturnCarModelList_whenInputContainsCorrectData() {
+
+        String sortDirection = "ASC";
+        String sortField = "carModelName";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+
+        when(carModelRepository.findAll(sort))
+                .thenReturn(Collections.emptyList());
+
+        List<CarModel> carModelList = carModelService.getAll();
+
+        assertNotNull(carModelList);
+        assertTrue(carModelList.isEmpty());
+
+        verify(carModelRepository).findAll();
+
+    }
+
+    @Test
+    void getAll_shouldThrowException_whenInputContainsNotExistingSortField() {
+
+        String sortDirection = "ASC";
+        String sortField = "Test sort field";
+
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carModelService.getAll(sortDirection, sortField));
+
+        assertEquals("Invalid sort field : " + sortField, exception.getMessage());
+
+        verify(carModelRepository, never()).findAll();
+
+    }
+
+    @Test
+    void getPage_shouldReturnPage_whenInputContainsCorrectData() {
+
+        int offset = 10;
+        int pageSize = 10;
+
+        Pageable pageable = PageRequest.of(offset, pageSize);
+
+        Page<CarModel> expectedCarModelPage = new PageImpl<>(Collections.emptyList(),pageable,0);
+
+        when(carModelRepository.findAll(pageable))
+                .thenReturn(expectedCarModelPage);
+
+        Page<CarModel> actualCarModelPage = carModelService.getPage(offset, pageSize);
+
+        assertNotNull(actualCarModelPage);
+        assertEquals(expectedCarModelPage, actualCarModelPage);
+
+        verify(carModelRepository).findAll(pageable);
+
+    }
+
+    @Test
+    void getPage_shouldThrowException_whenInputContainsNegativeOffset() {
+
+        int offset = -10;
+        int pageSize = 10;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carModelService.getPage(offset, pageSize));
+
+        assertEquals("Offset must be a non-negative integer.", exception.getMessage());
+
+        verify(carModelRepository, never()).findAll();
+
+    }
+
+    @Test
+    void getPage_shouldThrowException_whenInputContainsNegativePageSize() {
+
+        int offset = 10;
+        int pageSize = -10;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carModelService.getPage(offset, pageSize));
+
+        assertEquals("Page size must be a positive integer.", exception.getMessage());
+
+        verify(carModelRepository, never()).findAll();
 
     }
 

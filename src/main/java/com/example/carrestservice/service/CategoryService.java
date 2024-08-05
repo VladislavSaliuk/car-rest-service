@@ -5,10 +5,17 @@ import com.example.carrestservice.exception.CategoryNameException;
 import com.example.carrestservice.exception.CategoryNotFoundException;
 import com.example.carrestservice.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -73,6 +80,41 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
+    public List<Category> getAll(String sortDirection, String sortField) {
+
+        if(!isValidSortField(sortField)) {
+            throw new IllegalArgumentException("Invalid sort field : " + sortField);
+        }
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+        return categoryRepository.findAll(sort);
+    }
+
+    public Page<Category> getPage(int offset, int pageSize) {
+
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be a non-negative integer.");
+        }
+        if (pageSize <= 0) {
+            throw new IllegalArgumentException("Page size must be a positive integer.");
+        }
+
+        Pageable pageable = PageRequest.of(offset, pageSize);
+        return categoryRepository.findAll(pageable);
+    }
+
+    private boolean isValidSortField(String sortField) {
+
+        Field[] fields = Category.class.getDeclaredFields();
+
+        List<String> fieldList = Arrays.stream(fields)
+                .map(Field::getName)
+                .collect(Collectors.toList());
+
+        return fieldList.contains(sortField);
+    }
     public Category getById(long categoryId) {
 
         return categoryRepository.findById(categoryId)

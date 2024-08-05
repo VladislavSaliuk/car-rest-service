@@ -1,14 +1,22 @@
 package com.example.carrestservice.service;
 
 import com.example.carrestservice.entity.Car;
+import com.example.carrestservice.entity.CarModel;
+import com.example.carrestservice.entity.Category;
+import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.CarException;
 import com.example.carrestservice.exception.CarNotFoundException;
 import com.example.carrestservice.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CarService {
@@ -70,6 +78,27 @@ public class CarService {
 
     public List<Car> getAll() {
         return carRepository.findAll();
+    }
+
+    public List<Car> getAll(String sortDirection, String sortField) {
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+        return carRepository.findAll(sort);
+    }
+
+    public Page<Car> getPage(int offset, int pageSize) {
+
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be a non-negative integer.");
+        }
+        if (pageSize <= 0) {
+            throw new IllegalArgumentException("Page size must be a positive integer.");
+        }
+
+        Pageable pageable = PageRequest.of(offset, pageSize);
+        return carRepository.findAll(pageable);
     }
 
     public Car getById(long carId) {

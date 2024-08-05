@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -456,6 +457,76 @@ public class CarServiceTest {
 
     }
 
+    @Test
+    void getAll_shouldReturnCarList_whenInputContainsCorrectData() {
+
+        String sortDirection = "DESC";
+        String sortField = "manufactureYear";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+
+        when(carRepository.findAll(sort))
+                .thenReturn(Collections.emptyList());
+
+        List<Car> carList = carService.getAll();
+
+        assertTrue(carList.isEmpty());
+
+        verify(carRepository).findAll();
+
+    }
+
+    @Test
+    void getPage_shouldReturnPage_whenInputContainsCorrectData() {
+
+        int offset = 10;
+        int pageSize = 10;
+
+        Pageable pageable = PageRequest.of(offset, pageSize);
+
+        Page<Car> expectedCarPage = new PageImpl<>(Collections.emptyList(),pageable,0);
+
+        when(carRepository.findAll(pageable))
+                .thenReturn(expectedCarPage);
+
+        Page<Car> actualCarPage = carService.getPage(offset, pageSize);
+
+        assertNotNull(actualCarPage);
+        assertEquals(expectedCarPage, actualCarPage);
+
+        verify(carRepository).findAll(pageable);
+
+    }
+
+    @Test
+    void getPage_shouldThrowException_whenInputContainsNegativeOffset() {
+
+        int offset = -10;
+        int pageSize = 10;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carService.getPage(offset, pageSize));
+
+        assertEquals("Offset must be a non-negative integer.", exception.getMessage());
+
+        verify(carRepository, never()).findAll();
+
+    }
+
+    @Test
+    void getPage_shouldThrowException_whenInputContainsNegativePageSize() {
+
+        int offset = 10;
+        int pageSize = -10;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carService.getPage(offset, pageSize));
+
+        assertEquals("Page size must be a positive integer.", exception.getMessage());
+
+        verify(carRepository, never()).findAll();
+
+    }
 
     @Test
     void getById_shouldReturnCar_whenInputContainsExistingCarId() {

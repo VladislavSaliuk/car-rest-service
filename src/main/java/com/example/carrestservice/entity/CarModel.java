@@ -1,5 +1,7 @@
 package com.example.carrestservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,18 +15,22 @@ import java.io.Serializable;
 @Setter
 @Table(name = "car_models")
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CarModel implements Serializable {
 
     @Id
     @Column(name = "car_model_id")
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long carModelId;
 
+    @EqualsAndHashCode.Exclude
     @Column(name = "car_model_name", unique = true)
     private String carModelName;
 
-    @OneToOne(mappedBy = "carModel", cascade = CascadeType.ALL)
+    @JsonBackReference
+    @EqualsAndHashCode.Exclude
+    @OneToOne(mappedBy = "carModel", cascade = CascadeType.REMOVE)
     private Car car;
 
     public CarModel(String carModelName) {

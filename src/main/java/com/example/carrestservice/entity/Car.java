@@ -14,26 +14,31 @@ import java.io.Serializable;
 @Setter
 @Table(name = "cars")
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Car implements Serializable {
 
     @Id
     @Column(name = "car_id")
+    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long carId;
 
-    @ManyToOne(cascade =  CascadeType.ALL)
+    @ManyToOne
+    @EqualsAndHashCode.Exclude
     @JoinColumn(name = "manufacturer_id")
     private Manufacturer manufacturer;
 
+    @EqualsAndHashCode.Exclude
     @Column(name = "manufacture_year")
     private int manufactureYear;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @EqualsAndHashCode.Exclude
     @JoinColumn(name = "car_model_id", referencedColumnName = "car_model_id")
     private CarModel carModel;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
+    @EqualsAndHashCode.Exclude
     @JoinColumn(name = "category_id")
     private Category category;
 

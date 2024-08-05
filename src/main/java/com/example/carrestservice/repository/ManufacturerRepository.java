@@ -8,7 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface ManufacturerRepository extends JpaRepository<Manufacturer, Long> {
-    Optional<Manufacturer> findByManufacturerName(String manufacturerName);
+
     boolean existsByManufacturerName(String manufacturerName);
+    Optional<Manufacturer> findByManufacturerName(String manufacturerName);
 
 }

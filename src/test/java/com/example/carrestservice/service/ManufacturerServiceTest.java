@@ -1,5 +1,6 @@
 package com.example.carrestservice.service;
 
+import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.ManufacturerNameException;
 import com.example.carrestservice.exception.ManufacturerNotFoundException;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -248,6 +250,92 @@ public class ManufacturerServiceTest {
 
     }
 
+    @Test
+    void getAll_shouldReturnManufacturerList_whenInputContainsCorrectData() {
+
+        String sortDirection = "ASC";
+        String sortField = "manufacturerName";
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+
+        when(manufacturerRepository.findAll(sort))
+                .thenReturn(Collections.emptyList());
+
+        List<Manufacturer> manufacturerList = manufacturerService.getAll();
+
+        assertNotNull(manufacturerList);
+        assertTrue(manufacturerList.isEmpty());
+
+        verify(manufacturerRepository).findAll();
+
+    }
+
+    @Test
+    void getAll_shouldThrowException_whenInputContainsNotExistingSortField() {
+
+        String sortDirection = "ASC";
+        String sortField = "Test sort field";
+
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.getAll(sortDirection, sortField));
+
+        assertEquals("Invalid sort field : " + sortField, exception.getMessage());
+
+        verify(manufacturerRepository, never()).findAll();
+
+    }
+
+    @Test
+    void getPage_shouldReturnPage_whenInputContainsCorrectData() {
+
+        int offset = 10;
+        int pageSize = 10;
+
+        Pageable pageable = PageRequest.of(offset, pageSize);
+
+        Page<Manufacturer> expectedManufacturerPage = new PageImpl<>(Collections.emptyList(),pageable,0);
+
+        when(manufacturerRepository.findAll(pageable))
+                .thenReturn(expectedManufacturerPage);
+
+        Page<Manufacturer> actualManufacturerPage = manufacturerService.getPage(offset, pageSize);
+
+        assertNotNull(actualManufacturerPage);
+        assertEquals(expectedManufacturerPage, actualManufacturerPage);
+
+        verify(manufacturerRepository).findAll(pageable);
+
+    }
+
+    @Test
+    void getPage_shouldThrowException_whenInputContainsNegativeOffset() {
+
+        int offset = -10;
+        int pageSize = 10;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.getPage(offset, pageSize));
+
+        assertEquals("Offset must be a non-negative integer.", exception.getMessage());
+
+        verify(manufacturerRepository, never()).findAll();
+
+    }
+
+    @Test
+    void getPage_shouldThrowException_whenInputContainsNegativePageSize() {
+
+        int offset = 10;
+        int pageSize = -10;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.getPage(offset, pageSize));
+
+        assertEquals("Page size must be a positive integer.", exception.getMessage());
+
+        verify(manufacturerRepository, never()).findAll();
+
+    }
     @Test
     void getById_shouldReturnManufacturer_whenInputContainsExistingManufacturerId() {
 
