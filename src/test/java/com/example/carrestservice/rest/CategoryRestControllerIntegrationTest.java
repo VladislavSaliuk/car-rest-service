@@ -54,7 +54,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.createCategory(category))
                 .thenReturn(category);
 
-        mockMvc.perform(post("/categories/create")
+        mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isCreated())
@@ -71,7 +71,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.createCategory(any(Category.class)))
                 .thenThrow(new IllegalArgumentException("Category can not be null!"));
 
-        mockMvc.perform(post("/categories/create")
+        mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isBadRequest())
@@ -94,7 +94,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.createCategory(category))
                 .thenThrow(new CategoryNameException("Category name " + category.getCategoryName() + " already exists!"));
 
-        mockMvc.perform(post("/categories/create")
+        mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isBadRequest())
@@ -118,7 +118,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.updateCategory(category))
                 .thenReturn(category);
 
-        mockMvc.perform(put("/categories/update")
+        mockMvc.perform(put("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isOk())
@@ -141,7 +141,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.updateCategory(category))
                 .thenThrow(new CategoryNameException("Category name " + category.getCategoryName() + " already exists!"));
 
-        mockMvc.perform(put("/categories/update")
+        mockMvc.perform(put("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isBadRequest())
@@ -165,7 +165,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.updateCategory(category))
                 .thenThrow(new CategoryNameException("Category name " + category.getCategoryName() + " already exists!"));
 
-        mockMvc.perform(put("/categories/update")
+        mockMvc.perform(put("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isBadRequest())
@@ -189,7 +189,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.updateCategory(category))
                 .thenThrow(new CategoryNotFoundException("Category with Id " + category.getCategoryId() + " not found."));
 
-        mockMvc.perform(put("/categories/update")
+        mockMvc.perform(put("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
                 .andExpect(status().isBadRequest())
@@ -213,7 +213,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.removeById(categoryId))
                 .thenReturn(category);
 
-        mockMvc.perform(delete("/categories/remove/1"))
+        mockMvc.perform(delete("/categories/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categoryId").value(category.getCategoryId()));
 
@@ -234,7 +234,7 @@ public class CategoryRestControllerIntegrationTest {
         when(categoryService.removeById(categoryId))
                 .thenThrow(new CategoryNotFoundException("Category with Id " + categoryId + " not found."));
 
-        mockMvc.perform(delete("/categories/remove/100"))
+        mockMvc.perform(delete("/categories/100"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("Category with Id " + category.getCategoryId() + " not found."));

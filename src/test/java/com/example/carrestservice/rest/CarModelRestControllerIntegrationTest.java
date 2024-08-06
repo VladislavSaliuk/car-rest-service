@@ -55,7 +55,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.createCarModel(carModel))
                 .thenReturn(carModel);
 
-        mockMvc.perform(post("/car-models/create")
+        mockMvc.perform(post("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isCreated())
@@ -72,7 +72,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.createCarModel(any(CarModel.class)))
                 .thenThrow(new IllegalArgumentException("Car model can not be null!"));
 
-        mockMvc.perform(post("/car-models/create")
+        mockMvc.perform(post("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isBadRequest())
@@ -95,7 +95,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.createCarModel(carModel))
                 .thenThrow(new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!"));
 
-        mockMvc.perform(post("/car-models/create")
+        mockMvc.perform(post("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isBadRequest())
@@ -119,7 +119,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.updateCarModel(carModel))
                 .thenReturn(carModel);
 
-        mockMvc.perform(put("/car-models/update")
+        mockMvc.perform(put("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isOk())
@@ -142,7 +142,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.updateCarModel(carModel))
                 .thenThrow(new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!"));
 
-        mockMvc.perform(put("/car-models/update")
+        mockMvc.perform(put("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isBadRequest())
@@ -166,7 +166,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.updateCarModel(carModel))
                 .thenThrow(new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!"));
 
-        mockMvc.perform(put("/car-models/update")
+        mockMvc.perform(put("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isBadRequest())
@@ -190,7 +190,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.updateCarModel(carModel))
                 .thenThrow(new CarModelNotFoundException("Car model with Id " + carModel.getCarModelId() + " not found."));
 
-        mockMvc.perform(put("/car-models/update")
+        mockMvc.perform(put("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isBadRequest())
@@ -214,7 +214,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.removeById(carModelId))
                 .thenReturn(carModel);
 
-        mockMvc.perform(delete("/car-models/remove/1"))
+        mockMvc.perform(delete("/car-models/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.carModelId").value(carModel.getCarModelId()));
 
@@ -235,7 +235,7 @@ public class CarModelRestControllerIntegrationTest {
         when(carModelService.removeById(carModelId))
                 .thenThrow(new CarModelNotFoundException("Car model with Id " + carModelId + " not found."));
 
-        mockMvc.perform(delete("/car-models/remove/100"))
+        mockMvc.perform(delete("/car-models/100"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("Car model with Id " + carModel.getCarModelId() + " not found."));

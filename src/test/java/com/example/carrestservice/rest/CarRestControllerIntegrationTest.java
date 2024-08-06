@@ -56,10 +56,10 @@ public class CarRestControllerIntegrationTest {
 
         when(carService.createCar(car)).thenReturn(car);
 
-        mockMvc.perform(post("/cars/create")
+        mockMvc.perform(post("/cars")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.carId").value(car.getCarId()));
 
         verify(carService).createCar(car);
@@ -73,7 +73,7 @@ public class CarRestControllerIntegrationTest {
         when(carService.createCar(any(Car.class)))
                 .thenThrow(new IllegalArgumentException("Car cannot be null!"));
 
-        mockMvc.perform(post("/cars/create")
+        mockMvc.perform(post("/cars")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isBadRequest())
@@ -96,7 +96,7 @@ public class CarRestControllerIntegrationTest {
 
         when(carService.updateCar(car)).thenReturn(car);
 
-        mockMvc.perform(put("/cars/update")
+        mockMvc.perform(put("/cars")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isOk())
@@ -119,7 +119,7 @@ public class CarRestControllerIntegrationTest {
         when(carService.updateCar(car))
                 .thenThrow(new IllegalArgumentException("Car cannot be null!"));
 
-        mockMvc.perform(put("/cars/update")
+        mockMvc.perform(put("/cars")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isBadRequest())
@@ -142,7 +142,7 @@ public class CarRestControllerIntegrationTest {
 
         when(carService.removeById(carId)).thenReturn(car);
 
-        mockMvc.perform(delete("/cars/remove/1"))
+        mockMvc.perform(delete("/cars/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.carId").value(car.getCarId()));
 
@@ -157,7 +157,7 @@ public class CarRestControllerIntegrationTest {
         when(carService.removeById(carId))
                 .thenThrow(new CarNotFoundException("Car with Id " + carId + " not found."));
 
-        mockMvc.perform(delete("/cars/remove/100"))
+        mockMvc.perform(delete("/cars/100"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("Car with Id " + carId + " not found."));

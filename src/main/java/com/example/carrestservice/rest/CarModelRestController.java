@@ -1,9 +1,6 @@
 package com.example.carrestservice.rest;
 
 import com.example.carrestservice.entity.CarModel;
-import com.example.carrestservice.entity.Category;
-import com.example.carrestservice.entity.Manufacturer;
-import com.example.carrestservice.exception.ApiError;
 import com.example.carrestservice.service.CarModelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,40 +16,22 @@ public class CarModelRestController {
     @Autowired
     private CarModelService carModelService;
 
-    @PostMapping("/car-models/create")
-    public ResponseEntity<?> createCarModel(@RequestBody CarModel carModel) {
-        try {
-            carModelService.createCarModel(carModel);
-            return new ResponseEntity<>(carModel, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @PostMapping("/car-models")
+    public ResponseEntity<CarModel> createCarModel(@RequestBody CarModel carModel) {
+        carModelService.createCarModel(carModel);
+        return new ResponseEntity<>(carModel, HttpStatus.CREATED);
     }
 
-    @PutMapping("/car-models/update")
-    public ResponseEntity<?> updateCarModel(@RequestBody CarModel carModel) {
-        try {
-            carModelService.updateCarModel(carModel);
-            return new ResponseEntity<>(carModel, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @PutMapping("/car-models")
+    public ResponseEntity<CarModel> updateCarModel(@RequestBody CarModel carModel) {
+        carModelService.updateCarModel(carModel);
+        return new ResponseEntity<>(carModel, HttpStatus.OK);
     }
 
-    @DeleteMapping("/car-models/remove/{id}")
-    public ResponseEntity<?> removeCarModelById(@PathVariable("id") Long carModelId) {
-        try {
-            CarModel carModel = carModelService.removeById(carModelId);
-            return new ResponseEntity<>(carModel, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @DeleteMapping("/car-models/{id}")
+    public ResponseEntity<CarModel> removeCarModelById(@PathVariable("id") Long carModelId) {
+        CarModel carModel = carModelService.removeById(carModelId);
+        return new ResponseEntity<>(carModel, HttpStatus.OK);
     }
 
     @GetMapping("/car-models")
@@ -62,44 +41,26 @@ public class CarModelRestController {
     }
 
     @GetMapping("/car-models/sort")
-    public ResponseEntity<?> getSortedCarModels(@RequestParam(required = false, defaultValue = "carModelId") String sortField,
+    public ResponseEntity<List<CarModel>> getSortedCarModels(@RequestParam(required = false, defaultValue = "carModelId") String sortField,
                                                     @RequestParam(required = false, defaultValue = "DESC") String sortDirection){
-        try {
-            List<CarModel> carModelList = carModelService.getAll(sortDirection, sortField);
-            return new ResponseEntity<>(carModelList, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        List<CarModel> carModelList = carModelService.getAll(sortDirection, sortField);
+        return new ResponseEntity<>(carModelList, HttpStatus.OK);
     }
 
     @GetMapping("/car-models/pagination")
-    public ResponseEntity<?> getCarModelPage(
+    public ResponseEntity<List<CarModel>> getCarModelPage(
             @RequestParam int offset,
             @RequestParam int pageSize) {
 
-        try {
-            Page<CarModel> carModelPage = carModelService.getPage(offset, pageSize);
-            return new ResponseEntity<>(carModelPage.getContent(), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        Page<CarModel> carModelPage = carModelService.getPage(offset, pageSize);
+        return new ResponseEntity<>(carModelPage.getContent(), HttpStatus.OK);
     }
 
 
     @GetMapping("/car-models/{id}")
-    public ResponseEntity<?> getCarModelById(@PathVariable("id") Long carModelId) {
-        try {
-            CarModel carModel = carModelService.getById(carModelId);
-            return new ResponseEntity<>(carModel, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<CarModel> getCarModelById(@PathVariable("id") Long carModelId) {
+        CarModel carModel = carModelService.getById(carModelId);
+        return new ResponseEntity<>(carModel, HttpStatus.OK);
     }
 
 

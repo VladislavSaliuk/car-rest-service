@@ -18,86 +18,50 @@ public class CategoryRestController {
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping("/categories/create")
-    public ResponseEntity<?> createCategory(@RequestBody Category category) {
-        try {
-            categoryService.createCategory(category);
-            return new ResponseEntity<>(category, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @PostMapping("/categories")
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        categoryService.createCategory(category);
+        return new ResponseEntity<>(category, HttpStatus.CREATED);
     }
 
 
 
-    @PutMapping("/categories/update")
-    public ResponseEntity<?> updateCategory(@RequestBody Category category) {
-        try {
-            categoryService.updateCategory(category);
-            return new ResponseEntity<>(category,HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @PutMapping("/categories")
+    public ResponseEntity<Category> updateCategory(@RequestBody Category category) {
+        categoryService.updateCategory(category);
+        return new ResponseEntity<>(category,HttpStatus.OK);
     }
 
-    @DeleteMapping("/categories/remove/{id}")
-    public ResponseEntity<?> removeCategoryById(@PathVariable("id") Long categoryId) {
-        try {
-            Category category = categoryService.removeById(categoryId);
-            return new ResponseEntity<>(category, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Category> removeCategoryById(@PathVariable("id") Long categoryId) {
+        Category category = categoryService.removeById(categoryId);
+        return new ResponseEntity<>(category, HttpStatus.OK);
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<?> getCategories() {
+    public ResponseEntity<List<Category>> getCategories() {
         List<Category> categoryList = categoryService.getAll();
         return new ResponseEntity<>(categoryList, HttpStatus.OK);
     }
 
     @GetMapping("/categories/sort")
-    public ResponseEntity<?> getSortedCategories(@RequestParam(required = false, defaultValue = "categoryId") String sortField,
+    public ResponseEntity<List<Category>> getSortedCategories(@RequestParam(required = false, defaultValue = "categoryId") String sortField,
                                                 @RequestParam(required = false, defaultValue = "DESC") String sortDirection){
-        try {
-            List<Category> categoryList = categoryService.getAll(sortDirection, sortField);
-            return new ResponseEntity<>(categoryList, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        List<Category> categoryList = categoryService.getAll(sortDirection, sortField);
+        return new ResponseEntity<>(categoryList, HttpStatus.OK);
     }
 
     @GetMapping("/categories/pagination")
-    public ResponseEntity<?> getCategoryPage(
+    public ResponseEntity<List<Category>> getCategoryPage(
             @RequestParam int offset,
             @RequestParam int pageSize) {
 
-        try {
-            Page<Category> categoryPage = categoryService.getPage(offset, pageSize);
-            return new ResponseEntity<>(categoryPage.getContent(), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        Page<Category> categoryPage = categoryService.getPage(offset, pageSize);
+        return new ResponseEntity<>(categoryPage.getContent(), HttpStatus.OK);
     }
     @GetMapping("/categories/{id}")
-    public ResponseEntity<?> getCategoryById(@PathVariable("id") Long categoryId) {
-        try {
+    public ResponseEntity<Category> getCategoryById(@PathVariable("id") Long categoryId) {
             Category category = categoryService.getById(categoryId);
             return new ResponseEntity<>(category, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
     }
 }

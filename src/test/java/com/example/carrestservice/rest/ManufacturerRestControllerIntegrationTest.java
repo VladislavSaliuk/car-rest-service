@@ -52,7 +52,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.createManufacturer(manufacturer))
                 .thenReturn(manufacturer);
 
-        mockMvc.perform(post("/manufacturers/create")
+        mockMvc.perform(post("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
                 .andExpect(status().isCreated())
@@ -69,7 +69,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.createManufacturer(any(Manufacturer.class)))
                 .thenThrow(new IllegalArgumentException("Manufacturer cannot be null!"));
 
-        mockMvc.perform(post("/manufacturers/create")
+        mockMvc.perform(post("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
                 .andExpect(status().isBadRequest())
@@ -92,7 +92,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.createManufacturer(manufacturer))
                 .thenThrow(new ManufacturerNameException("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!"));
 
-        mockMvc.perform(post("/manufacturers/create")
+        mockMvc.perform(post("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
                 .andExpect(status().isBadRequest())
@@ -115,10 +115,10 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.updateManufacturer(manufacturer))
                 .thenReturn(manufacturer);
 
-        mockMvc.perform(put("/manufacturers/update")
+        mockMvc.perform(put("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.manufacturerId").value(manufacturer.getManufacturerId()));
 
         verify(manufacturerService).updateManufacturer(manufacturer);
@@ -137,7 +137,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.updateManufacturer(manufacturer))
                 .thenThrow(new ManufacturerNameException("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!"));
 
-        mockMvc.perform(put("/manufacturers/update")
+        mockMvc.perform(put("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
                 .andExpect(status().isBadRequest())
@@ -160,7 +160,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.updateManufacturer(manufacturer))
                 .thenThrow(new ManufacturerNameException("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!"));
 
-        mockMvc.perform(put("/manufacturers/update")
+        mockMvc.perform(put("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
                 .andExpect(status().isBadRequest())
@@ -183,7 +183,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.updateManufacturer(manufacturer))
                 .thenThrow(new ManufacturerNotFoundException("Manufacturer with Id " + manufacturer.getManufacturerId() + " not found."));
 
-        mockMvc.perform(put("/manufacturers/update")
+        mockMvc.perform(put("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
                 .andExpect(status().isBadRequest())
@@ -206,7 +206,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.removeById(manufacturerId))
                 .thenReturn(manufacturer);
 
-        mockMvc.perform(delete("/manufacturers/remove/1"))
+        mockMvc.perform(delete("/manufacturers/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.manufacturerId").value(manufacturer.getManufacturerId()));
 
@@ -226,7 +226,7 @@ public class ManufacturerRestControllerIntegrationTest {
         when(manufacturerService.removeById(manufacturerId))
                 .thenThrow(new ManufacturerNotFoundException("Manufacturer with Id " + manufacturerId + " not found."));
 
-        mockMvc.perform(delete("/manufacturers/remove/100"))
+        mockMvc.perform(delete("/manufacturers/100"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("Manufacturer with Id " + manufacturerId + " not found."));

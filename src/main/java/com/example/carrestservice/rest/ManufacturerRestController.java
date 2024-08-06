@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,85 +21,51 @@ public class ManufacturerRestController {
     private ManufacturerService manufacturerService;
 
     private static final Logger logger = LoggerFactory.getLogger(ManufacturerRestController.class);
-    @PostMapping("/manufacturers/create")
-    public ResponseEntity<?> createManufacturer(@RequestBody Manufacturer manufacturer) {
-        try {
-            manufacturerService.createManufacturer(manufacturer);
-            return new ResponseEntity<>(manufacturer, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @PostMapping("/manufacturers")
+    public ResponseEntity<Manufacturer> createManufacturer(@RequestBody Manufacturer manufacturer) {
+        manufacturerService.createManufacturer(manufacturer);
+        return new ResponseEntity<>(manufacturer, HttpStatus.CREATED);
     }
 
-    @PutMapping("/manufacturers/update")
+    @PutMapping("/manufacturers")
     public ResponseEntity<?> updateManufacturer(@RequestBody Manufacturer manufacturer) {
-        try {
-            manufacturerService.updateManufacturer(manufacturer);
-            return new ResponseEntity<>(manufacturer, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        manufacturerService.updateManufacturer(manufacturer);
+        return new ResponseEntity<>(manufacturer, HttpStatus.OK);
     }
-    @DeleteMapping("manufacturers/remove/{id}")
-    public ResponseEntity<?> removeManufacturerById(@PathVariable("id") Long manufacturerId) {
-        try {
-            Manufacturer manufacturer = manufacturerService.removeById(manufacturerId);
-            return new ResponseEntity<>(manufacturer, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    @DeleteMapping("manufacturers/{id}")
+    public ResponseEntity<Manufacturer> removeManufacturerById(@PathVariable("id") Long manufacturerId) {
+        Manufacturer manufacturer = manufacturerService.removeById(manufacturerId);
+        return new ResponseEntity<>(manufacturer, HttpStatus.OK);
     }
 
     @GetMapping("/manufacturers")
-    public ResponseEntity<?> getManufacturers(){
+    public ResponseEntity<List<Manufacturer>> getManufacturers(){
         List<Manufacturer> manufacturerList = manufacturerService.getAll();
         return new ResponseEntity<>(manufacturerList,HttpStatus.OK);
     }
 
     @GetMapping("/manufacturers/sort")
-    public ResponseEntity<?> getSortedManufacturers(@RequestParam(required = false, defaultValue = "manufacturerId") String sortField,
+    public ResponseEntity<List<Manufacturer>> getSortedManufacturers(@RequestParam(required = false, defaultValue = "manufacturerId") String sortField,
                                               @RequestParam(required = false, defaultValue = "DESC") String sortDirection){
-        try {
-            List<Manufacturer> manufacturerList = manufacturerService.getAll(sortDirection, sortField);
-            return new ResponseEntity<>(manufacturerList, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+
+        List<Manufacturer> manufacturerList = manufacturerService.getAll(sortDirection, sortField);
+        return new ResponseEntity<>(manufacturerList, HttpStatus.OK);
     }
 
     @GetMapping("/manufacturers/pagination")
-    public ResponseEntity<?> getManufacturerPage(
+    public ResponseEntity<List<Manufacturer>> getManufacturerPage(
             @RequestParam int offset,
             @RequestParam int pageSize) {
 
-        try {
-            Page<Manufacturer> manufacturerPage = manufacturerService.getPage(offset, pageSize);
-            return new ResponseEntity<>(manufacturerPage.getContent(), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        Page<Manufacturer> manufacturerPage = manufacturerService.getPage(offset, pageSize);
+        return new ResponseEntity<>(manufacturerPage.getContent(), HttpStatus.OK);
     }
 
     @GetMapping("/manufacturers/{id}")
-    public ResponseEntity<?> getManufacturerById(@PathVariable("id") Long manufacturerId) {
-        try {
-            Manufacturer manufacturer = manufacturerService.getById(manufacturerId);
-            return new ResponseEntity<>(manufacturer, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(
-                    new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Manufacturer> getManufacturerById(@PathVariable("id") Long manufacturerId) {
+
+        Manufacturer manufacturer = manufacturerService.getById(manufacturerId);
+        return new ResponseEntity<>(manufacturer, HttpStatus.OK);
     }
 
 
