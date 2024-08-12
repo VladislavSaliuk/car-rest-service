@@ -1,19 +1,25 @@
 package com.example.carrestservice.service;
 
-import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.ManufacturerNameException;
 import com.example.carrestservice.exception.ManufacturerNotFoundException;
 import com.example.carrestservice.repository.ManufacturerRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -27,99 +33,86 @@ public class ManufacturerServiceTest {
     @MockBean
     ManufacturerRepository manufacturerRepository;
 
+    static Manufacturer manufacturer;
+
+    @BeforeAll
+    static void init() {
+        manufacturer = new Manufacturer();
+        manufacturer.setManufacturerId(1L);
+        manufacturer.setManufacturerName("Test");
+    }
+
+    static Stream<Pageable> pageableProvider() {
+        return Stream.of(
+                PageRequest.of(0, 5),
+                PageRequest.of(1, 10),
+                PageRequest.of(2, 20),
+                PageRequest.of(3, 25),
+                PageRequest.of(4, 30),
+                PageRequest.of(5, 40),
+                PageRequest.of(6, 45),
+                PageRequest.of(7, 50),
+                PageRequest.of(8, 55),
+                PageRequest.of(9, 60)
+        );
+    }
+
     @Test
     void createManufacturer_shouldReturnManufacturer_whenInputContainsManufacturer() {
 
-        String manufacturerName = "Test manufacturer name";
+        when(manufacturerRepository.existsByManufacturerName(manufacturer.getManufacturerName()))
+                .thenReturn(false);
 
-        Manufacturer expectedManufacturer = new Manufacturer();
+        when(manufacturerRepository.save(manufacturer))
+                .thenReturn(manufacturer);
 
-        expectedManufacturer.setManufacturerName(manufacturerName);
-        expectedManufacturer.setCars(Collections.emptySet());
-
-        when(manufacturerRepository.findByManufacturerName(manufacturerName))
-                .thenReturn(Optional.empty());
-
-        when(manufacturerRepository.save(expectedManufacturer))
-                .thenReturn(expectedManufacturer);
-
-        Manufacturer actualManufacturer = manufacturerService.createManufacturer(expectedManufacturer);
+        Manufacturer actualManufacturer = manufacturerService.createManufacturer(manufacturer);
 
         assertNotNull(actualManufacturer);
-        assertEquals(expectedManufacturer, actualManufacturer);
+        assertEquals(manufacturer, actualManufacturer);
 
-        verify(manufacturerRepository).findByManufacturerName(manufacturerName);
-        verify(manufacturerRepository).save(expectedManufacturer);
-
+        verify(manufacturerRepository).existsByManufacturerName(manufacturer.getManufacturerName());
+        verify(manufacturerRepository).save(manufacturer);
     }
 
     @Test
     void createManufacturer_shouldThrowException_whenInputContainsNull() {
+
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.createManufacturer(null));
+
         assertEquals("Manufacturer cannot be null!", exception.getMessage());
 
-        verify(manufacturerRepository, never()).findByManufacturerName(null);
+        verify(manufacturerRepository, never()).existsByManufacturerName(null);
         verify(manufacturerRepository, never()).save(null);
     }
 
     @Test
-    void createManufacturer_shouldThrowException_whenInputContainsManufacturerWithExistingManufacturerName() {
+    void createManufacturer_shouldThrowException_whenInputContainsManufacturerWithExistingName() {
 
-        String manufacturerName = "Nissan";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        when(manufacturerRepository.findByManufacturerName(manufacturerName))
-                .thenReturn(Optional.ofNullable(manufacturer));
+        when(manufacturerRepository.existsByManufacturerName(manufacturer.getManufacturerName()))
+                .thenReturn(true);
 
         ManufacturerNameException exception = assertThrows(ManufacturerNameException.class, () -> manufacturerService.createManufacturer(manufacturer));
 
         assertEquals("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!", exception.getMessage());
 
-        verify(manufacturerRepository).findByManufacturerName(manufacturerName);
+        verify(manufacturerRepository).existsByManufacturerName(manufacturer.getManufacturerName());
         verify(manufacturerRepository, never()).save(manufacturer);
-
     }
 
     @Test
-    void updateManufacturer_shouldReturnManufacturer_whenInputContainsManufacturer() {
-
-        long manufacturerId = 1;
-        String manufacturerName  = "Test manufacturerName";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        Manufacturer updatedManufacturer = new Manufacturer();
-
-        updatedManufacturer.setManufacturerId(manufacturerId);
-        updatedManufacturer.setManufacturerName("Test manufacturer name 1");
-        updatedManufacturer.setCars(Collections.emptySet());
+    void updateManufacturer_shouldUpdateManufacturer_whenInputContainsManufacturer() {
 
         when(manufacturerRepository.findById(manufacturer.getManufacturerId()))
-                .thenReturn(Optional.ofNullable(manufacturer));
+                .thenReturn(Optional.of(manufacturer));
 
-        when(manufacturerRepository.existsByManufacturerName(updatedManufacturer.getManufacturerName()))
+        when(manufacturerRepository.existsByManufacturerName(manufacturer.getManufacturerName()))
                 .thenReturn(false);
 
-        when(manufacturerRepository.save(updatedManufacturer))
-                .thenReturn(updatedManufacturer);
-
-        Manufacturer actualManufacturer = manufacturerService.updateManufacturer(updatedManufacturer);
-
-        assertNotNull(actualManufacturer);
-        assertEquals(updatedManufacturer, actualManufacturer);
+        manufacturerService.updateManufacturer(manufacturer);
 
         verify(manufacturerRepository).findById(manufacturer.getManufacturerId());
-        verify(manufacturerRepository).existsByManufacturerName(updatedManufacturer.getManufacturerName());
-        verify(manufacturerRepository).save(updatedManufacturer);
-
+        verify(manufacturerRepository).existsByManufacturerName(manufacturer.getManufacturerName());
     }
 
     @Test
@@ -128,240 +121,108 @@ public class ManufacturerServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.updateManufacturer(null));
         assertEquals("Manufacturer cannot be null!", exception.getMessage());
 
-        verify(manufacturerRepository, never()).findByManufacturerName(null);
+        verify(manufacturerRepository, never()).findById(0L);
         verify(manufacturerRepository, never()).save(null);
-
     }
 
     @Test
-    void updateManufacturer_shouldThrowException_whenInputContainsManufacturerWithExistingManufacturerName() {
-
-        long manufacturerId = 1;
-        String manufacturerName  = "Test manufacturerName";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        Manufacturer updatedManufacturer = new Manufacturer();
-
-        updatedManufacturer.setManufacturerId(manufacturerId);
-        updatedManufacturer.setManufacturerName("Nissan");
-        updatedManufacturer.setCars(Collections.emptySet());
+    void updateManufacturer_shouldThrowException_whenInputContainsManufacturerWithExistingName() {
 
         when(manufacturerRepository.findById(manufacturer.getManufacturerId()))
                 .thenReturn(Optional.ofNullable(manufacturer));
 
-        when(manufacturerRepository.existsByManufacturerName(updatedManufacturer.getManufacturerName()))
+        when(manufacturerRepository.existsByManufacturerName(manufacturer.getManufacturerName()))
                 .thenReturn(true);
 
-        ManufacturerNameException exception = assertThrows(ManufacturerNameException.class, () -> manufacturerService.updateManufacturer(updatedManufacturer));
+        ManufacturerNameException exception = assertThrows(ManufacturerNameException.class, () -> manufacturerService.updateManufacturer(manufacturer));
 
-        assertEquals("Manufacturer name " + updatedManufacturer.getManufacturerName() + " already exists!", exception.getMessage() );
+        assertEquals("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!", exception.getMessage());
 
         verify(manufacturerRepository).findById(manufacturer.getManufacturerId());
-        verify(manufacturerRepository).existsByManufacturerName(updatedManufacturer.getManufacturerName());
-        verify(manufacturerRepository, never()).save(updatedManufacturer);
-
+        verify(manufacturerRepository).existsByManufacturerName(manufacturer.getManufacturerName());
     }
 
     @Test
-    void updateManufacturer_shouldThrowException_whenInputContainsManufacturerWithNotExistingManufacturerId() {
+    void updateManufacturer_shouldThrowException_whenInputContainsManufacturerWithNotExistingId() {
 
-        long manufacturerId = 100;
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName("Nissan");
-        manufacturer.setCars(Collections.emptySet());
-
-        when(manufacturerRepository.findById(manufacturerId))
+        when(manufacturerRepository.findById(manufacturer.getManufacturerId()))
                 .thenReturn(Optional.empty());
 
         ManufacturerNotFoundException exception = assertThrows(ManufacturerNotFoundException.class, () -> manufacturerService.updateManufacturer(manufacturer));
 
-        assertEquals("Manufacturer with Id " + manufacturer.getManufacturerId() + " not found.", exception.getMessage() );
+        assertEquals("Manufacturer with Id " + manufacturer.getManufacturerId() + " not found.", exception.getMessage());
 
         verify(manufacturerRepository).findById(manufacturer.getManufacturerId());
         verify(manufacturerRepository, never()).existsByManufacturerName(null);
         verify(manufacturerRepository, never()).save(null);
-
     }
 
-
     @Test
-    void removeById_shouldReturnManufacturer_whenInputContainsExistingManufacturerId() {
+    void removeById_shouldRemoveManufacturer_whenInputContainsExistingManufacturerId() {
 
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
+        long manufacturerId = 1L;
 
-        Manufacturer expectedManufacturer = new Manufacturer();
-
-        expectedManufacturer.setManufacturerId(manufacturerId);
-        expectedManufacturer.setManufacturerName(manufacturerName);
-        expectedManufacturer.setCars(Collections.emptySet());
-
-        when(manufacturerRepository.findById(expectedManufacturer.getManufacturerId()))
-                .thenReturn(Optional.ofNullable(expectedManufacturer));
+        when(manufacturerRepository.existsByManufacturerId(manufacturerId))
+                .thenReturn(true);
 
         doNothing().when(manufacturerRepository).deleteById(manufacturerId);
 
-        Manufacturer actualManufacturer = manufacturerService.removeById(expectedManufacturer.getManufacturerId());
+        manufacturerService.removeById(manufacturerId);
 
-        assertNotNull(actualManufacturer);
-        assertEquals(expectedManufacturer, actualManufacturer);
-
-        verify(manufacturerRepository).findById(manufacturerId);
+        verify(manufacturerRepository).existsByManufacturerId(manufacturerId);
         verify(manufacturerRepository).deleteById(manufacturerId);
-
     }
 
-    @Test
-    void removeById_shouldThrowException_whenInputContainsNotExistingManufacturerId() {
+    @ParameterizedTest
+    @ValueSource(longs = {11L, 20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void removeById_shouldThrowException_whenInputContainsNotExistingManufacturerId(long manufacturerId) {
 
-        long manufacturerId = 100;
-
-        when(manufacturerRepository.findById(manufacturerId))
-                .thenReturn(Optional.empty());
+        when(manufacturerRepository.existsByManufacturerId(manufacturerId))
+                .thenReturn(false);
 
         ManufacturerNotFoundException exception = assertThrows(ManufacturerNotFoundException.class, () -> manufacturerService.removeById(manufacturerId));
 
         assertEquals("Manufacturer with Id " + manufacturerId + " not found.", exception.getMessage());
 
-        verify(manufacturerRepository).findById(manufacturerId);
+        verify(manufacturerRepository).existsByManufacturerId(manufacturerId);
         verify(manufacturerRepository, never()).deleteById(manufacturerId);
-
     }
 
-    @Test
-    void getAll_shouldReturnManufacturerList() {
+    @ParameterizedTest
+    @MethodSource("pageableProvider")
+    void getAll_shouldReturnManufacturerPage_whenInputContainsCorrectPageable(Pageable pageable) {
 
-        when(manufacturerRepository.findAll())
-                .thenReturn(Collections.emptyList());
-
-        List<Manufacturer> manufacturerList = manufacturerService.getAll();
-
-        assertTrue(manufacturerList.isEmpty());
-
-        verify(manufacturerRepository).findAll();
-
-    }
-
-    @Test
-    void getAll_shouldReturnManufacturerList_whenInputContainsCorrectData() {
-
-        String sortDirection = "ASC";
-        String sortField = "manufacturerName";
-
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-
-        Sort sort = Sort.by(direction, sortField);
-
-        when(manufacturerRepository.findAll(sort))
-                .thenReturn(Collections.emptyList());
-
-        List<Manufacturer> manufacturerList = manufacturerService.getAll();
-
-        assertNotNull(manufacturerList);
-        assertTrue(manufacturerList.isEmpty());
-
-        verify(manufacturerRepository).findAll();
-
-    }
-
-    @Test
-    void getAll_shouldThrowException_whenInputContainsNotExistingSortField() {
-
-        String sortDirection = "ASC";
-        String sortField = "Test sort field";
-
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.getAll(sortDirection, sortField));
-
-        assertEquals("Invalid sort field : " + sortField, exception.getMessage());
-
-        verify(manufacturerRepository, never()).findAll();
-
-    }
-
-    @Test
-    void getPage_shouldReturnPage_whenInputContainsCorrectData() {
-
-        int offset = 10;
-        int pageSize = 10;
-
-        Pageable pageable = PageRequest.of(offset, pageSize);
-
-        Page<Manufacturer> expectedManufacturerPage = new PageImpl<>(Collections.emptyList(),pageable,0);
+        Page<Manufacturer> page = new PageImpl<>(List.of(manufacturer), pageable, 2);
 
         when(manufacturerRepository.findAll(pageable))
-                .thenReturn(expectedManufacturerPage);
+                .thenReturn(page);
 
-        Page<Manufacturer> actualManufacturerPage = manufacturerService.getPage(offset, pageSize);
+        Page<Manufacturer> actualPage = manufacturerService.getAll(pageable);
 
-        assertNotNull(actualManufacturerPage);
-        assertEquals(expectedManufacturerPage, actualManufacturerPage);
+        assertEquals(page, actualPage);
 
         verify(manufacturerRepository).findAll(pageable);
-
     }
 
-    @Test
-    void getPage_shouldThrowException_whenInputContainsNegativeOffset() {
-
-        int offset = -10;
-        int pageSize = 10;
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.getPage(offset, pageSize));
-
-        assertEquals("Offset must be a non-negative integer.", exception.getMessage());
-
-        verify(manufacturerRepository, never()).findAll();
-
-    }
-
-    @Test
-    void getPage_shouldThrowException_whenInputContainsNegativePageSize() {
-
-        int offset = 10;
-        int pageSize = -10;
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manufacturerService.getPage(offset, pageSize));
-
-        assertEquals("Page size must be a positive integer.", exception.getMessage());
-
-        verify(manufacturerRepository, never()).findAll();
-
-    }
     @Test
     void getById_shouldReturnManufacturer_whenInputContainsExistingManufacturerId() {
 
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer expectedManufacturer = new Manufacturer();
-
-        expectedManufacturer.setManufacturerId(manufacturerId);
-        expectedManufacturer.setManufacturerName(manufacturerName);
+        long manufacturerId = 1L;
 
         when(manufacturerRepository.findById(manufacturerId))
-                .thenReturn(Optional.ofNullable(expectedManufacturer));
+                .thenReturn(Optional.ofNullable(manufacturer));
 
         Manufacturer actualManufacturer = manufacturerService.getById(manufacturerId);
 
-        assertEquals(expectedManufacturer, actualManufacturer);
+        assertNotNull(actualManufacturer);
+        assertEquals(manufacturer, actualManufacturer);
 
         verify(manufacturerRepository).findById(manufacturerId);
-
     }
 
-    @Test
-    void getById_shouldThrowException_whenInputContainsNotExistingManufacturerId() {
-
-        long manufacturerId = 100;
+    @ParameterizedTest
+    @ValueSource(longs = {11L, 20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void getById_shouldThrowException_whenInputContainsNotExistingManufacturerId(long manufacturerId) {
 
         when(manufacturerRepository.findById(manufacturerId))
                 .thenReturn(Optional.empty());
@@ -371,7 +232,5 @@ public class ManufacturerServiceTest {
         assertEquals("Manufacturer with Id " + manufacturerId + " not found.", exception.getMessage());
 
         verify(manufacturerRepository).findById(manufacturerId);
-
     }
-
 }

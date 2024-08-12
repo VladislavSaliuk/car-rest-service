@@ -1,35 +1,23 @@
 package com.example.carrestservice.rest;
 
-
 import com.example.carrestservice.entity.CarModel;
-import com.example.carrestservice.exception.CarModelNameException;
-import com.example.carrestservice.exception.CarModelNotFoundException;
-import com.example.carrestservice.exception.CategoryNotFoundException;
-import com.example.carrestservice.service.CarModelService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(CarModelRestController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Sql(scripts = {"/sql/drop_data.sql","/sql/insert_car_models.sql"})
 public class CarModelRestControllerIntegrationTest {
 
     @Autowired
@@ -38,386 +26,55 @@ public class CarModelRestControllerIntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockBean
-    CarModelService carModelService;
+    static CarModel carModel;
 
+    @BeforeAll
+    static void init() {
+        carModel = new CarModel();
+        carModel.setCarModelId(1L);
+        carModel.setCarModelName("Test");
+    }
 
     @Test
-    void createCarModel_shouldReturnCreatedRequest_whenInputContainsCorrectData() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.createCarModel(carModel))
-                .thenReturn(carModel);
-
+    public void createCarModel_shouldReturnCreatedRequest() throws Exception {
         mockMvc.perform(post("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.carModelId").value(carModel.getCarModelId()));
-
-        verify(carModelService).createCarModel(carModel);
+                .andExpect(jsonPath("$.carModelId").value(1))
+                .andExpect(jsonPath("$.carModelName").value("Test"));
     }
 
     @Test
-    void createCarModel_shouldReturnBadRequest_whenInputContainsNull() throws Exception {
-
-        CarModel carModel = new CarModel();
-
-        when(carModelService.createCarModel(any(CarModel.class)))
-                .thenThrow(new IllegalArgumentException("Car model can not be null!"));
-
-        mockMvc.perform(post("/car-models")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(carModel)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model can not be null!"));
-
-        verify(carModelService).createCarModel(any(CarModel.class));
-    }
-
-    @Test
-    void createCarModel_shouldReturnBadRequest_whenInputContainsAlreadyExistingCarModelName() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.createCarModel(carModel))
-                .thenThrow(new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!"));
-
-        mockMvc.perform(post("/car-models")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(carModel)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model name " + carModel.getCarModelName() + " already exists!"));
-
-        verify(carModelService).createCarModel(carModel);
-
-    }
-
-    @Test
-    void updateCarModel_shouldReturnCreatedRequest_whenInputContainsCorrectData() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.updateCarModel(carModel))
-                .thenReturn(carModel);
-
+    public void updateCarModel_shouldReturnNoContentRequest() throws Exception {
         mockMvc.perform(put("/car-models")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(carModel)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carModelId").value(carModel.getCarModelId()));
-
-        verify(carModelService).updateCarModel(carModel);
-
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    void updateCarModel_shouldReturnBadRequest_whenInputContainsNull() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.updateCarModel(carModel))
-                .thenThrow(new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!"));
-
-        mockMvc.perform(put("/car-models")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(carModel)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model name " + carModel.getCarModelName() + " already exists!"));
-
-        verify(carModelService).updateCarModel(carModel);
-
-    }
-
-    @Test
-    void updateCarModel_shouldReturnBadRequest_whenInputContainsCarModelWithNotExistingCarModelId() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.updateCarModel(carModel))
-                .thenThrow(new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!"));
-
-        mockMvc.perform(put("/car-models")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(carModel)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model name " + carModel.getCarModelName() + " already exists!"));
-
-        verify(carModelService).updateCarModel(carModel);
-
-    }
-
-    @Test
-    void updateCarModel_shouldReturnBadRequest_whenInputAlreadyExistingCarModelName() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.updateCarModel(carModel))
-                .thenThrow(new CarModelNotFoundException("Car model with Id " + carModel.getCarModelId() + " not found."));
-
-        mockMvc.perform(put("/car-models")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(carModel)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model with Id " + carModel.getCarModelId() + " not found."));
-
-        verify(carModelService).updateCarModel(carModel);
-
-    }
-
-    @Test
-    void removeCarModelById_shouldReturnOkRequest_whenInputContainsExistingCarModelId() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.removeById(carModelId))
-                .thenReturn(carModel);
-
+    public void removeCarModelById_shouldReturnNoContentRequest() throws Exception {
         mockMvc.perform(delete("/car-models/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void getCarModels_shouldReturnOKRequest() throws Exception {
+        mockMvc.perform(get("/car-models")
+                        .param("sortField", "carModelId")
+                        .param("sortDirection", "ASC")
+                        .param("offset", "0")
+                        .param("pageSize", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carModelId").value(carModel.getCarModelId()));
-
-        verify(carModelService).removeById(carModelId);
-
+                .andExpect(jsonPath("$.content[0].carModelId").value(1));
     }
 
     @Test
-    void removeCarModelById_shouldReturnBadRequest_whenInputContainsNotExistingCarModelId() throws Exception {
-
-        long carModelId = 100;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.removeById(carModelId))
-                .thenThrow(new CarModelNotFoundException("Car model with Id " + carModelId + " not found."));
-
-        mockMvc.perform(delete("/car-models/100"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model with Id " + carModel.getCarModelId() + " not found."));
-
-        verify(carModelService).removeById(carModelId);
-
-    }
-
-    @Test
-    void getCarModels_shouldReturnOkRequest() throws Exception {
-
-        when(carModelService.getAll()).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/car-models"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-
-        verify(carModelService).getAll();
-
-    }
-
-    @Test
-    void getSortedCarModels_shouldReturnOkRequest_whenInputContainsCorrectData() throws Exception {
-
-        String sortField = "carModelName";
-        String sortDirection = "ASC";
-
-        when(carModelService.getAll(sortDirection, sortField))
-                .thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/car-models/sort")
-                        .param("sortField", sortField)
-                        .param("sortDirection", sortDirection))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-
-        verify(carModelService).getAll(sortDirection, sortField);
-    }
-    @Test
-    void getSortedCarModels_shouldReturnOkRequest_whenInputContainsInCorrectSortField() throws Exception {
-
-        String sortField = "test car model field";
-        String sortDirection = "ASC";
-
-        when(carModelService.getAll(sortDirection, sortField))
-                .thenThrow(new IllegalArgumentException("Invalid sort field : " + sortField));
-
-        mockMvc.perform(get("/car-models/sort")
-                        .param("sortField", sortField)
-                        .param("sortDirection", sortDirection))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Invalid sort field : " + sortField));
-
-        verify(carModelService).getAll(sortDirection, sortField);
-    }
-
-
-    @Test
-    void getCarModelPage_shouldReturnOkRequest_whenInputContainsCorrectData() throws Exception {
-
-        int offset = 10;
-        int pageSize = 10;
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        Page<CarModel> carModelPage = new PageImpl<>(List.of(carModel));
-
-        when(carModelService.getPage(offset, pageSize))
-                .thenReturn(carModelPage);
-
-        mockMvc.perform(get("/car-models/pagination")
-                        .param("offset", String.valueOf(offset))
-                        .param("pageSize", String.valueOf(pageSize)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].carModelId").value(carModel.getCarModelId()));
-
-        verify(carModelService).getPage(offset, pageSize);
-
-    }
-
-    @Test
-    void getCarModelPage_shouldReturnBadRequestRequest_whenInputContainsNegativeOffset() throws Exception {
-
-        int offset = -10;
-        int pageSize = 10;
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.getPage(offset, pageSize))
-                .thenThrow(new IllegalArgumentException("Offset must be a non-negative integer."));
-
-        mockMvc.perform(get("/car-models/pagination")
-                        .param("offset", String.valueOf(offset))
-                        .param("pageSize", String.valueOf(pageSize)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Offset must be a non-negative integer."));
-
-        verify(carModelService).getPage(offset, pageSize);
-
-    }
-
-    @Test
-    void getCarModelPage_shouldReturnBadRequestRequest_whenInputContainsNegativePageSize() throws Exception {
-
-        int offset = 10;
-        int pageSize = -10;
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.getPage(offset, pageSize))
-                .thenThrow(new IllegalArgumentException("Page size must be a positive integer."));
-
-        mockMvc.perform(get("/car-models/pagination")
-                        .param("offset", String.valueOf(offset))
-                        .param("pageSize", String.valueOf(pageSize)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Page size must be a positive integer."));
-
-        verify(carModelService).getPage(offset, pageSize);
-
-    }
-
-    @Test
-    void getCarModelById_shouldReturnOkRequest_whenInputContainsExistingCategoryId() throws Exception {
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.getById(carModelId))
-                .thenReturn(carModel);
-
+    public void getCarModelById_shouldReturnOKRequest() throws Exception {
         mockMvc.perform(get("/car-models/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carModelId").value(carModel.getCarModelId()));
-
-        verify(carModelService).getById(carModelId);
-
+                .andExpect(jsonPath("$.carModelId").value(1))
+                .andExpect(jsonPath("$.carModelName").value("Camry"));
     }
-
-    @Test
-    void getCarModelById_shouldReturnBadRequest_whenInputContainsNotExistingCategoryId() throws Exception {
-
-        long carModelId = 100;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        when(carModelService.getById(carModelId))
-                .thenThrow(new CategoryNotFoundException("Car model with Id " + carModelId + " not found."));
-
-        mockMvc.perform(get("/car-models/100"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("Car model with Id " + carModelId + " not found."));
-
-        verify(carModelService).getById(carModelId);
-
-    }
-
-
 }

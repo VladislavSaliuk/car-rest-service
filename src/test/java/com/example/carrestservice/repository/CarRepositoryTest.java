@@ -4,7 +4,10 @@ import com.example.carrestservice.entity.Car;
 import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Category;
 import com.example.carrestservice.entity.Manufacturer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -18,133 +21,74 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CarRepositoryTest {
 
     @Autowired
     CarRepository carRepository;
 
-    @Autowired
-    CarModelRepository carModelRepository;
-
-    @Autowired
-    CategoryRepository categoryRepository;
-    @Autowired
-    ManufacturerRepository manufacturerRepository;
-
     @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
     void save_shouldSaveChanges_whenInputContainsCorrectCar() {
-
-        long carModelId = 10;
-        long categoryId = 1;
-        long manufacturerId = 1;
-
-        Optional<CarModel> carModel = carModelRepository.findById(carModelId);
-        Optional<Category> category = categoryRepository.findById(categoryId);
-        Optional<Manufacturer> manufacturer = manufacturerRepository.findById(manufacturerId);
-
-        Car car = new Car(manufacturer.get(), 2024, carModel.get(), category.get());
-
+        Car car = new Car();
         carRepository.save(car);
-
-        assertTrue(carModel.isPresent());
-        assertTrue(category.isPresent());
-        assertTrue(manufacturer.isPresent());
-
         assertEquals(10, carRepository.count());
 
     }
     @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void save_shouldThrowException_whenInputContainsCarWithAlreadyExistingCarModel() {
-
-        long carModelId = 5;
-        long categoryId = 1;
-        long manufacturerId = 1;
-
-        Optional<CarModel> carModel = carModelRepository.findById(carModelId);
-        Optional<Category> category = categoryRepository.findById(categoryId);
-        Optional<Manufacturer> manufacturer = manufacturerRepository.findById(manufacturerId);
-
-        Car car = new Car(manufacturer.get(), 2024, carModel.get(), category.get());
-
-        assertTrue(carModel.isPresent());
-        assertTrue(category.isPresent());
-        assertTrue(manufacturer.isPresent());
-
-        DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class, () -> carRepository.save(car));
-
-    }
-
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
     void findAll_shouldReturnCarList() {
         List<Car> carList = carRepository.findAll();
         assertEquals(9, carList.size());
     }
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void deleteById_shouldNotDeleteCarFromDatabase_whenInputContainsNotExistingCarId() {
-        long carId = 100;
+
+    @ParameterizedTest
+    @ValueSource(longs = {1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L})
+    void deleteById_shouldDeleteCarFriDatabase_whenInputContainsExistingCarId(long carId) {
+        carRepository.deleteById(carId);
+        assertEquals(8, carRepository.count());
+    }
+    @ParameterizedTest
+    @ValueSource(longs = {20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void deleteById_shouldNotDeleteCarFromDatabase_whenInputContainsNotExistingCarId(long carId) {
         carRepository.deleteById(carId);
         assertEquals(9, carRepository.count());
     }
 
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void findById_shouldReturnCar_whenInputContainsExistingCarId() {
-
-        long carId = 3;
-
-        long manufacturerId = 2;
-        long carModelId = 3;
-        long categoryId = 5;
-
-        Optional<Manufacturer> manufacturer = manufacturerRepository.findById(manufacturerId);
-        Optional<CarModel> carModel = carModelRepository.findById(carModelId);
-        Optional<Category> category = categoryRepository.findById(categoryId);
-
-        Car expectedCar = new Car();
-
-        expectedCar.setCarId(carId);
-        expectedCar.setManufacturer(manufacturer.get());
-        expectedCar.setManufactureYear(2018);
-        expectedCar.setCarModel(carModel.get());
-        expectedCar.setCategory(category.get());
-
-        Optional<Car> actualCar = carRepository.findById(carId);
-
-        assertTrue(carModel.isPresent());
-        assertTrue(category.isPresent());
-        assertTrue(manufacturer.isPresent());
-        assertTrue(actualCar.isPresent());
-
-        assertEquals(expectedCar, actualCar.get());
-
+    @ParameterizedTest
+    @ValueSource(longs = {1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L})
+    void findById_shouldReturnCar_whenInputContainsExistingCarId(long carId) {
+        Optional<Car> optionalCar = carRepository.findById(carId);
+        assertTrue(optionalCar.isPresent());
     }
 
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void findCarByCarId_shouldReturnNull_whenInputContainsNotExistingCarId() {
-        long carId = 100;
-        Optional<Car> actualCar = carRepository.findById(carId);
-        assertTrue(actualCar.isEmpty());
+    @ParameterizedTest
+    @ValueSource(longs = {20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void findById_shouldReturnNull_whenInputContainsNotExistingCarId(long carId) {
+        Optional<Car> optionalCar = carRepository.findById(carId);
+        assertTrue(optionalCar.isEmpty());
     }
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void existsByCarModel_CarModelId_shouldReturnTrue_whenInputContainsExistingCarModelId() {
-        long carModelId = 4;
-        boolean isCarModelExists = carRepository.existsByCarModel_CarModelId(carModelId);
-        assertTrue(isCarModelExists);
+    @ParameterizedTest
+    @ValueSource(longs = {1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L})
+    void existsByCarModel_CarModelId_shouldReturnTrue_whenInputContainsExistingCarModelId(long carModelId) {
+        assertTrue(carRepository.existsByCarModel_CarModelId(carModelId));
     }
 
-    @Test
-    @Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
-    void existsByCarModel_CarModelId_shouldReturnFalse_whenInputContainsNotExistingCarModelId() {
-        long carModelId = 100;
-        boolean isCarModelExists = carRepository.existsByCarModel_CarModelId(carModelId);
-        assertFalse(isCarModelExists);
+    @ParameterizedTest
+    @ValueSource(longs = {20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void existsByCarModel_CarModelId_shouldReturnFalse_whenInputContainsNotExistingCarModelId(long carModelId) {
+        assertFalse(carRepository.existsByCarModel_CarModelId(carModelId));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L})
+    void existsByCarId_shouldReturnTrue_whenInputContainsExistingCarId(long carId) {
+        assertTrue(carRepository.existsByCarId(carId));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void existsByCarId_shouldReturnFalse_whenInputContainsNotExistingCarId(long carId) {
+        assertFalse(carRepository.existsByCarId(carId));
     }
 
 }

@@ -21,7 +21,8 @@ public class CarModel implements Serializable {
     @Id
     @Column(name = "car_model_id")
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "car_model_id_generator")
+    @SequenceGenerator(name = "car_model_id_generator", initialValue = 1, allocationSize = 1, sequenceName = "car_model_id_seq")
     private long carModelId;
 
     @EqualsAndHashCode.Exclude

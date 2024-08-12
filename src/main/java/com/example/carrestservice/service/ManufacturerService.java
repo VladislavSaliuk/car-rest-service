@@ -1,6 +1,8 @@
 package com.example.carrestservice.service;
 
+import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Manufacturer;
+import com.example.carrestservice.exception.CarModelNameException;
 import com.example.carrestservice.exception.ManufacturerNameException;
 import com.example.carrestservice.exception.ManufacturerNotFoundException;
 import com.example.carrestservice.repository.ManufacturerRepository;
@@ -19,19 +21,19 @@ import java.util.stream.Collectors;
 
 @Service
 public class ManufacturerService {
-
-    @Autowired
     private ManufacturerRepository manufacturerRepository;
+
+    public ManufacturerService(ManufacturerRepository manufacturerRepository) {
+        this.manufacturerRepository = manufacturerRepository;
+    }
 
     public Manufacturer createManufacturer(Manufacturer manufacturer) {
 
-        if(manufacturer == null) {
+        if (manufacturer == null) {
             throw new IllegalArgumentException("Manufacturer cannot be null!");
         }
 
-        Optional<Manufacturer> existingManufacturer = manufacturerRepository.findByManufacturerName(manufacturer.getManufacturerName());
-
-        if(existingManufacturer.isPresent()) {
+        if (manufacturerRepository.existsByManufacturerName(manufacturer.getManufacturerName())) {
             throw new ManufacturerNameException("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!");
         }
 
@@ -39,77 +41,46 @@ public class ManufacturerService {
 
     }
 
-    public Manufacturer updateManufacturer(Manufacturer manufacturer) {
+    public void updateManufacturer(Manufacturer manufacturer) {
 
-        if(manufacturer == null) {
+        if (manufacturer == null) {
             throw new IllegalArgumentException("Manufacturer cannot be null!");
         }
 
-        Optional<Manufacturer> optionalManufacturer = manufacturerRepository.findById(manufacturer.getManufacturerId());
+        Manufacturer updatedManufacturer = manufacturerRepository.findById(manufacturer.getManufacturerId())
+                .orElseThrow(() -> new ManufacturerNotFoundException("Manufacturer with Id " + manufacturer.getManufacturerId() + " not found."));
 
-        return optionalManufacturer.map(updatedManufacturer -> {
-
-            updatedManufacturer.setManufacturerName(manufacturer.getManufacturerName());
-
-            boolean isManufacturerNameTaken = manufacturerRepository.existsByManufacturerName(manufacturer.getManufacturerName());
-
-            if(isManufacturerNameTaken) {
-                throw new ManufacturerNameException("Manufacturer name " + updatedManufacturer.getManufacturerName() + " already exists!");
-            }
-
-            return manufacturerRepository.save(updatedManufacturer);
-
-        }).orElseThrow(() ->
-            new ManufacturerNotFoundException("Manufacturer with Id " + manufacturer.getManufacturerId() + " not found.")
-        );
+        Optional.of(manufacturer.getManufacturerName())
+                .filter(manufacturerName -> !manufacturerRepository.existsByManufacturerName(manufacturerName))
+                .ifPresentOrElse(
+                        updatedManufacturerName -> updatedManufacturer.setManufacturerName(updatedManufacturerName),
+                        () -> {
+                            throw new ManufacturerNameException("Manufacturer name " + manufacturer.getManufacturerName() + " already exists!");
+                        }
+                );
 
     }
 
-    public Manufacturer removeById(long manufacturerId) {
+    public void removeById(long manufacturerId) {
 
-        Manufacturer manufacturer = manufacturerRepository.findById(manufacturerId)
-                .orElseThrow(() -> new ManufacturerNotFoundException("Manufacturer with Id " + manufacturerId + " not found."));
-
-        manufacturerRepository.deleteById(manufacturerId);
-
-        return manufacturer;
-    }
-
-    public List<Manufacturer> getAll() {
-        return manufacturerRepository.findAll();
-    }
-    public List<Manufacturer> getAll(String sortDirection, String sortField) {
-
-        if(!isValidSortField(sortField)) {
-            throw new IllegalArgumentException("Invalid sort field : " + sortField);
+        if(!manufacturerRepository.existsByManufacturerId(manufacturerId)) {
+            throw new ManufacturerNotFoundException("Manufacturer with Id " + manufacturerId + " not found.");
+        } else {
+            manufacturerRepository.deleteById(manufacturerId);
         }
 
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-
-        Sort sort = Sort.by(direction, sortField);
-        return manufacturerRepository.findAll(sort);
     }
 
-    private boolean isValidSortField(String sortField) {
+    public Page<Manufacturer> getAll(Pageable pageable) {
 
-        Field[] fields = Manufacturer.class.getDeclaredFields();
-
-        List<String> fieldList = Arrays.stream(fields)
-                .map(Field::getName)
-                .collect(Collectors.toList());
-
-        return fieldList.contains(sortField);
-    }
-    public Page<Manufacturer> getPage(int offset, int pageSize) {
-
-        if (offset < 0) {
+        if (pageable.getOffset() < 0) {
             throw new IllegalArgumentException("Offset must be a non-negative integer.");
         }
-        if (pageSize <= 0) {
+
+        if (pageable.getPageSize() <= 0) {
             throw new IllegalArgumentException("Page size must be a positive integer.");
         }
 
-        Pageable pageable = PageRequest.of(offset, pageSize);
         return manufacturerRepository.findAll(pageable);
     }
 

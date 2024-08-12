@@ -22,7 +22,8 @@ public class Manufacturer implements Serializable {
     @Id
     @Column(name = "manufacturer_id")
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "manufacturer_id_generator")
+    @SequenceGenerator(name = "manufacturer_id_generator", initialValue = 1, allocationSize = 1, sequenceName = "manufacturer_id_seq")
     private long manufacturerId;
 
     @EqualsAndHashCode.Exclude

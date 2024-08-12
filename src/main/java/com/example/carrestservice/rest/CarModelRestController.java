@@ -4,6 +4,9 @@ import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.service.CarModelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,54 +16,52 @@ import java.util.List;
 @RestController
 public class CarModelRestController {
 
-    @Autowired
     private CarModelService carModelService;
 
+    public CarModelRestController(CarModelService carModelService) {
+        this.carModelService = carModelService;
+    }
+
     @PostMapping("/car-models")
-    public ResponseEntity<CarModel> createCarModel(@RequestBody CarModel carModel) {
-        carModelService.createCarModel(carModel);
-        return new ResponseEntity<>(carModel, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public CarModel createCarModel(@RequestBody CarModel carModel) {
+        return carModelService.createCarModel(carModel);
     }
 
     @PutMapping("/car-models")
-    public ResponseEntity<CarModel> updateCarModel(@RequestBody CarModel carModel) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCarModel(@RequestBody CarModel carModel) {
         carModelService.updateCarModel(carModel);
-        return new ResponseEntity<>(carModel, HttpStatus.OK);
     }
 
     @DeleteMapping("/car-models/{id}")
-    public ResponseEntity<CarModel> removeCarModelById(@PathVariable("id") Long carModelId) {
-        CarModel carModel = carModelService.removeById(carModelId);
-        return new ResponseEntity<>(carModel, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeCarModelById(@PathVariable("id") Long carModelId) {
+        carModelService.removeById(carModelId);
     }
 
     @GetMapping("/car-models")
-    public ResponseEntity<?> getCarModels() {
-        List<CarModel> carModelList = carModelService.getAll();
-        return new ResponseEntity<>(carModelList, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public Page<CarModel> getCarModels(
+            @RequestParam(required = false, defaultValue = "carModelId") String sortField,
+            @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
+            @RequestParam(required = false, defaultValue = "0") int offset,
+            @RequestParam(required = false, defaultValue = "10") int pageSize){
+
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+
+        Pageable pageable = PageRequest.of(offset, pageSize,sort);
+
+        return carModelService.getAll(pageable);
     }
-
-    @GetMapping("/car-models/sort")
-    public ResponseEntity<List<CarModel>> getSortedCarModels(@RequestParam(required = false, defaultValue = "carModelId") String sortField,
-                                                    @RequestParam(required = false, defaultValue = "DESC") String sortDirection){
-        List<CarModel> carModelList = carModelService.getAll(sortDirection, sortField);
-        return new ResponseEntity<>(carModelList, HttpStatus.OK);
-    }
-
-    @GetMapping("/car-models/pagination")
-    public ResponseEntity<List<CarModel>> getCarModelPage(
-            @RequestParam int offset,
-            @RequestParam int pageSize) {
-
-        Page<CarModel> carModelPage = carModelService.getPage(offset, pageSize);
-        return new ResponseEntity<>(carModelPage.getContent(), HttpStatus.OK);
-    }
-
 
     @GetMapping("/car-models/{id}")
-    public ResponseEntity<CarModel> getCarModelById(@PathVariable("id") Long carModelId) {
-        CarModel carModel = carModelService.getById(carModelId);
-        return new ResponseEntity<>(carModel, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public CarModel getCarModelById(@PathVariable Long id) {
+        return carModelService.getById(id);
     }
 
 

@@ -1,6 +1,7 @@
 package com.example.carrestservice.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,7 +21,8 @@ public class Car implements Serializable {
     @Id
     @Column(name = "car_id")
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "car_id_generator")
+    @SequenceGenerator(name = "car_id_generator", initialValue = 1, allocationSize = 1, sequenceName = "car_id_seq")
     private long carId;
 
     @ManyToOne
@@ -42,10 +44,51 @@ public class Car implements Serializable {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public Car(Manufacturer manufacturer, int manufactureYear, CarModel carModel, Category category) {
-        this.manufacturer = manufacturer;
-        this.manufactureYear = manufactureYear;
-        this.carModel = carModel;
-        this.category = category;
+    public Car(CarBuilder carBuilder) {
+        this.carId = carBuilder.carId;
+        this.manufacturer = carBuilder.manufacturer;
+        this.manufactureYear = carBuilder.manufactureYear;
+        this.carModel = carBuilder.carModel;
+        this.category = carBuilder.category;
     }
+
+    public static class CarBuilder {
+        private long carId;
+        private Manufacturer manufacturer;
+        private int manufactureYear;
+        private CarModel carModel;
+        private Category category;
+
+        public CarBuilder carId(long carId) {
+            this.carId = carId;
+            return this;
+        }
+
+        public CarBuilder manufacturer(Manufacturer manufacturer) {
+            this.manufacturer = manufacturer;
+            return this;
+        }
+
+        public CarBuilder manufactureYear(int manufactureYear) {
+            this.manufactureYear = manufactureYear;
+            return this;
+        }
+
+        public CarBuilder carModel(CarModel carModel) {
+            this.carModel = carModel;
+            return this;
+        }
+
+        public CarBuilder category(Category category) {
+            this.category = category;
+            return this;
+        }
+
+        public Car build() {
+            return new Car(this);
+        }
+
+    }
+
+
 }

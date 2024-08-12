@@ -20,7 +20,8 @@ public class Category implements Serializable {
     @Id
     @Column(name= "category_id")
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_id_generator")
+    @SequenceGenerator(name = "category_id_generator", initialValue = 1, allocationSize = 1, sequenceName = "category_id_seq")
     private long categoryId;
 
     @EqualsAndHashCode.Exclude

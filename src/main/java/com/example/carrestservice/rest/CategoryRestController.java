@@ -4,8 +4,12 @@ import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Category;
 import com.example.carrestservice.exception.ApiError;
 import com.example.carrestservice.service.CategoryService;
+import jdk.jfr.consumer.RecordedThread;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,54 +18,48 @@ import java.util.List;
 
 @RestController
 public class CategoryRestController {
-
-    @Autowired
     private CategoryService categoryService;
-
-    @PostMapping("/categories")
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        categoryService.createCategory(category);
-        return new ResponseEntity<>(category, HttpStatus.CREATED);
+    public CategoryRestController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
-
-
+    @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Category createCategory(@RequestBody Category category) {
+        return categoryService.createCategory(category);
+    }
     @PutMapping("/categories")
-    public ResponseEntity<Category> updateCategory(@RequestBody Category category) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCategory(@RequestBody Category category) {
         categoryService.updateCategory(category);
-        return new ResponseEntity<>(category,HttpStatus.OK);
     }
 
     @DeleteMapping("/categories/{id}")
-    public ResponseEntity<Category> removeCategoryById(@PathVariable("id") Long categoryId) {
-        Category category = categoryService.removeById(categoryId);
-        return new ResponseEntity<>(category, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeCategoryById(@PathVariable("id") Long categoryId) {
+        categoryService.removeById(categoryId);
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getCategories() {
-        List<Category> categoryList = categoryService.getAll();
-        return new ResponseEntity<>(categoryList, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public Page<Category> getCategories(
+            @RequestParam(required = false, defaultValue = "categoriesId") String sortField,
+            @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
+            @RequestParam(required = false, defaultValue = "0") int offset,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+
+        Pageable pageable = PageRequest.of(offset, pageSize,sort);
+
+        return categoryService.getAll(pageable);
     }
 
-    @GetMapping("/categories/sort")
-    public ResponseEntity<List<Category>> getSortedCategories(@RequestParam(required = false, defaultValue = "categoryId") String sortField,
-                                                @RequestParam(required = false, defaultValue = "DESC") String sortDirection){
-        List<Category> categoryList = categoryService.getAll(sortDirection, sortField);
-        return new ResponseEntity<>(categoryList, HttpStatus.OK);
-    }
-
-    @GetMapping("/categories/pagination")
-    public ResponseEntity<List<Category>> getCategoryPage(
-            @RequestParam int offset,
-            @RequestParam int pageSize) {
-
-        Page<Category> categoryPage = categoryService.getPage(offset, pageSize);
-        return new ResponseEntity<>(categoryPage.getContent(), HttpStatus.OK);
-    }
     @GetMapping("/categories/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable("id") Long categoryId) {
-            Category category = categoryService.getById(categoryId);
-            return new ResponseEntity<>(category, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public Category getCategoryById(@PathVariable Long id) {
+        return categoryService.getById(id);
     }
 }

@@ -7,15 +7,22 @@ import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.CarException;
 import com.example.carrestservice.exception.CarNotFoundException;
 import com.example.carrestservice.repository.CarRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,576 +30,221 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class CarServiceTest {
 
-
     @Autowired
     CarService carService;
 
     @MockBean
     CarRepository carRepository;
 
+    static Car car;
 
-    @Test
-    void createCar_shouldReturnCar_whenInputContainsCar() {
-
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
+    @BeforeAll
+    static void init() {
 
         CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
+        carModel.setCarModelId(1L);
+        carModel.setCarModelName("Test");
 
         Category category = new Category();
+        category.setCategoryId(1L);
+        category.setCategoryName("Test");
 
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
+        Manufacturer manufacturer = new Manufacturer();
+        manufacturer.setManufacturerId(1L);
+        manufacturer.setManufacturerName("Test");
 
-        Car car = new Car();
+        car = new Car.CarBuilder()
+                .carId(1L)
+                .manufacturer(manufacturer)
+                .manufactureYear(2024)
+                .carModel(carModel)
+                .category(category)
+                .build();
+    }
+    static Stream<Pageable> pageableProvider() {
+        return Stream.of(
+                PageRequest.of(0, 5),
+                PageRequest.of(1, 10),
+                PageRequest.of(2, 20),
+                PageRequest.of(3, 25),
+                PageRequest.of(4, 30),
+                PageRequest.of(5, 40),
+                PageRequest.of(6, 45),
+                PageRequest.of(7, 50),
+                PageRequest.of(8, 55),
+                PageRequest.of(9, 60)
+        );
 
-        car.setManufacturer(manufacturer);
-        car.setManufactureYear(2024);
-        car.setCarModel(carModel);
-        car.setCategory(category);
+    }
+    @Test
+    void createCar_shouldReturnCar_whenInputIsValid() {
 
-        when(carRepository.existsByCarModel_CarModelId(carModelId))
+        when(carRepository.existsByCarModel_CarModelId(car.getCarModel().getCarModelId()))
                 .thenReturn(false);
 
-        when(carRepository.save(car))
-                .thenReturn(car);
+        when(carRepository.save(car)).thenReturn(car);
 
         Car actualCar = carService.createCar(car);
 
         assertNotNull(actualCar);
         assertEquals(car, actualCar);
 
-        verify(carRepository).existsByCarModel_CarModelId(carModelId);
+        verify(carRepository).existsByCarModel_CarModelId(car.getCarModel().getCarModelId());
         verify(carRepository).save(car);
-
     }
 
     @Test
-    void createCar_shouldThrowException_whenInputContainsNull() {
+    void createCar_shouldThrowException_whenInputIsNull() {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carService.createCar(null));
 
         assertEquals("Car cannot be null!", exception.getMessage());
 
-        verify(carRepository, never()).existsByCarModel_CarModelId(0L);
-        verify(carRepository, never()).save(null);
-
+        verify(carRepository, never()).existsByCarModel_CarModelId(anyLong());
+        verify(carRepository, never()).save(any(Car.class));
     }
 
     @Test
-    void createCar_shouldThrowException_whenInputContainsCarWithExistingCarModel() {
+    void createCar_shouldThrowException_whenCarModelAlreadyExists() {
 
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
-
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        Car car = new Car();
-
-        car.setManufacturer(manufacturer);
-        car.setManufactureYear(2024);
-        car.setCarModel(carModel);
-        car.setCategory(category);
-
-        when(carRepository.existsByCarModel_CarModelId(carModelId))
+        when(carRepository.existsByCarModel_CarModelId(car.getCarModel().getCarModelId()))
                 .thenReturn(true);
 
-        CarException exception = assertThrows(CarException.class,() -> carService.createCar(car));
+        CarException exception = assertThrows(CarException.class, () -> carService.createCar(car));
 
-        assertEquals("Car with car model Id " + car.getCarModel().getCarModelId() + " already exist!", exception.getLocalizedMessage());
+        assertEquals("Car with car model Id " + car.getCarModel().getCarModelId() + " already exist!", exception.getMessage());
 
-        verify(carRepository).existsByCarModel_CarModelId(carModelId);
+        verify(carRepository).existsByCarModel_CarModelId(car.getCarModel().getCarModelId());
         verify(carRepository, never()).save(car);
-
     }
 
     @Test
-    void updateCar_shouldReturnCar_whenInputContainsCar() {
-
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
-
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        long carId = 1;
-
-        Car car = new Car();
-
-        car.setCarId(carId);
-        car.setManufacturer(manufacturer);
-        car.setManufactureYear(2024);
-        car.setCarModel(carModel);
-        car.setCategory(category);
-
-        Car updatedCar = new Car();
-
-        updatedCar.setCarId(carId);
-        updatedCar.setManufacturer(manufacturer);
-        updatedCar.setManufactureYear(2020);
-        updatedCar.setCarModel(carModel);
-        updatedCar.setCategory(category);
+    void updateCar_shouldUpdateCar_whenInputContainsCar() {
 
         when(carRepository.findById(car.getCarId()))
-                .thenReturn(Optional.ofNullable(car));
+                .thenReturn(Optional.of(car));
 
-        when(carRepository.existsByCarModel_CarModelId(updatedCar.getCarModel().getCarModelId()))
-                .thenReturn(false);
+        when(carRepository.existsByCarModel_CarModelId(car.getCarModel().getCarModelId()))
+                .thenReturn(true);
 
-        when(carRepository.save(updatedCar))
-                .thenReturn(updatedCar);
+        carService.updateCar(car);
 
-        Car actualCar = carService.updateCar(updatedCar);
-
-        assertNotNull(actualCar);
-        assertEquals(updatedCar, actualCar);
 
         verify(carRepository).findById(car.getCarId());
-        verify(carRepository).existsByCarModel_CarModelId(updatedCar.getCarModel().getCarModelId());
-        verify(carRepository).save(updatedCar);
+        verify(carRepository).existsByCarModel_CarModelId(car.getCarModel().getCarModelId());
 
     }
 
     @Test
-    void updateCar_shouldThrowException_whenInputContainsNull() {
+    void updateCar_shouldThrowException_whenInputIsNull() {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carService.updateCar(null));
         assertEquals("Car cannot be null!", exception.getMessage());
 
-        verify(carRepository, never()).findById(0L);
-        verify(carRepository, never()).existsByCarModel_CarModelId(0L);
-        verify(carRepository, never()).save(null);
+        verify(carRepository, never()).findById(anyLong());
+        verify(carRepository, never()).save(any(Car.class));
 
     }
 
     @Test
-    void updateCar_shouldThrowException_whenInputContainsCarWithExistingCarModel() {
-
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
-
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        long carId = 1;
-
-        Car car = new Car();
-
-        car.setCarId(carId);
-        car.setManufacturer(manufacturer);
-        car.setManufactureYear(2024);
-        car.setCarModel(carModel);
-        car.setCategory(category);
-
-        Car updatedCar = new Car();
-
-        updatedCar.setCarId(carId);
-        updatedCar.setManufacturer(manufacturer);
-        updatedCar.setManufactureYear(2020);
-        updatedCar.setCarModel(carModel);
-        updatedCar.setCategory(category);
-
-        when(carRepository.findById(car.getCarId()))
-                .thenReturn(Optional.ofNullable(car));
-
-        when(carRepository.existsByCarModel_CarModelId(updatedCar.getCarModel().getCarModelId()))
-                .thenReturn(true);
-
-        CarException exception = assertThrows(CarException.class, () -> carService.updateCar(updatedCar));
-
-        assertEquals("Car with car model Id " + updatedCar.getCarModel().getCarModelId() + " already exist!", exception.getMessage());
-
-        verify(carRepository).findById(car.getCarId());
-        verify(carRepository).existsByCarModel_CarModelId(updatedCar.getCarModel().getCarModelId());
-        verify(carRepository, never()).save(updatedCar);
-
-    }
-
-    @Test
-    void updateCar_shouldThrowException_whenInputContainsNotExistingCar() {
-
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
-
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        long carId = 1;
-
-        Car car = new Car();
-
-        car.setCarId(carId);
-        car.setManufacturer(manufacturer);
-        car.setManufactureYear(2024);
-        car.setCarModel(carModel);
-        car.setCategory(category);
+    void updateCar_shouldThrowException_whenCarNotFound() {
 
         when(carRepository.findById(car.getCarId()))
                 .thenReturn(Optional.empty());
-
 
         CarNotFoundException exception = assertThrows(CarNotFoundException.class, () -> carService.updateCar(car));
 
-        assertEquals("Car with Id " + car.getCarModel().getCarModelId() + " not found!", exception.getMessage());
+        assertEquals("Car with Id " + car.getCarId() + " not found.", exception.getMessage());
 
         verify(carRepository).findById(car.getCarId());
-        verify(carRepository, never()).existsByCarModel_CarModelId(0L);
-        verify(carRepository, never()).save(null);
+        verify(carRepository, never()).save(any(Car.class));
 
     }
 
     @Test
-    void removeById_shouldReturnCar_whenInputContainsExistingCarId() {
+    void updateCar_shouldThrowException_whenCarModelDoesNotExist() {
 
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
+        when(carRepository.findById(car.getCarId())).thenReturn(Optional.of(car));
+        when(carRepository.existsByCarModel_CarModelId(car.getCarModel().getCarModelId())).thenReturn(false);
 
-        Manufacturer manufacturer = new Manufacturer();
+        CarException exception = assertThrows(CarException.class, () -> carService.updateCar(car));
 
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
+        assertEquals("Car model with Id " + car.getCarModel().getCarModelId() + " already exists!", exception.getMessage());
 
-        long carModelId = 1;
-        String carModelName = "Test car model name";
+        verify(carRepository).findById(car.getCarId());
+        verify(carRepository).existsByCarModel_CarModelId(car.getCarModel().getCarModelId());
 
-        CarModel carModel = new CarModel();
+    }
 
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
+    @Test
+    void removeById_shouldRemoveCar_whenCarExists() {
 
-        long categoryId = 1;
-        String categoryName = "Test category name";
+        long carId = 1L;
 
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        long carId = 1;
-
-        Car expectedCar = new Car();
-
-        expectedCar.setCarId(carId);
-        expectedCar.setManufacturer(manufacturer);
-        expectedCar.setManufactureYear(2024);
-        expectedCar.setCarModel(carModel);
-        expectedCar.setCategory(category);
-
-        when(carRepository.findById(carId))
-                .thenReturn(Optional.ofNullable(expectedCar));
-
+        when(carRepository.existsByCarId(carId)).thenReturn(true);
         doNothing().when(carRepository).deleteById(carId);
 
-        Car actualCar = carService.removeById(carId);
+        carService.removeById(carId);
 
-        assertNotNull(actualCar);
-        assertEquals(expectedCar, actualCar);
-
-        verify(carRepository).findById(carId);
+        verify(carRepository).existsByCarId(carId);
         verify(carRepository).deleteById(carId);
-
     }
 
-    @Test
-    void removeById_shouldThrowException_whenInputContainsNotExistingCarId() {
+    @ParameterizedTest
+    @ValueSource(longs = {11L, 20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void removeById_shouldThrowException_whenCarDoesNotExist(long carId) {
 
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
-
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        long carId = 100;
-
-        Car expectedCar = new Car();
-
-        expectedCar.setCarId(carId);
-        expectedCar.setManufacturer(manufacturer);
-        expectedCar.setManufactureYear(2024);
-        expectedCar.setCarModel(carModel);
-        expectedCar.setCategory(category);
-
-        when(carRepository.findById(carId))
-                .thenReturn(Optional.empty());
+        when(carRepository.existsByCarId(carId)).thenReturn(false);
 
         CarNotFoundException exception = assertThrows(CarNotFoundException.class, () -> carService.removeById(carId));
 
-        assertEquals("Car with Id " + carId + " not found.", exception.getMessage());
+        assertEquals("Car with Id " + carId + " not found!", exception.getMessage());
 
-        verify(carRepository).findById(carId);
+        verify(carRepository).existsByCarId(carId);
         verify(carRepository, never()).deleteById(carId);
 
     }
 
-    @Test
-    void getAll_shouldReturnCarList() {
+    @ParameterizedTest
+    @MethodSource("pageableProvider")
+    void getAll_shouldReturnPageOfCars_whenInputIsValid(Pageable pageable) {
 
-        when(carRepository.findAll())
-                .thenReturn(Collections.emptyList());
+        Page<Car> page = new PageImpl<>(List.of(car), pageable, 2);
 
-        List<Car> carList = carService.getAll();
+        when(carRepository.findAll(pageable)).thenReturn(page);
 
-        assertTrue(carList.isEmpty());
+        Page<Car> actualPage = carService.getAll(pageable);
 
-        verify(carRepository).findAll();
-
-    }
-
-    @Test
-    void getAll_shouldReturnCarList_whenInputContainsCorrectData() {
-
-        String sortDirection = "DESC";
-        String sortField = "manufactureYear";
-
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-
-        Sort sort = Sort.by(direction, sortField);
-
-        when(carRepository.findAll(sort))
-                .thenReturn(Collections.emptyList());
-
-        List<Car> carList = carService.getAll();
-
-        assertTrue(carList.isEmpty());
-
-        verify(carRepository).findAll();
-
-    }
-
-    @Test
-    void getPage_shouldReturnPage_whenInputContainsCorrectData() {
-
-        int offset = 10;
-        int pageSize = 10;
-
-        Pageable pageable = PageRequest.of(offset, pageSize);
-
-        Page<Car> expectedCarPage = new PageImpl<>(Collections.emptyList(),pageable,0);
-
-        when(carRepository.findAll(pageable))
-                .thenReturn(expectedCarPage);
-
-        Page<Car> actualCarPage = carService.getPage(offset, pageSize);
-
-        assertNotNull(actualCarPage);
-        assertEquals(expectedCarPage, actualCarPage);
+        assertEquals(page, actualPage);
 
         verify(carRepository).findAll(pageable);
-
     }
 
     @Test
-    void getPage_shouldThrowException_whenInputContainsNegativeOffset() {
+    void getById_shouldReturnCar_whenCarExists() {
+        long carId = 1L;
 
-        int offset = -10;
-        int pageSize = 10;
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carService.getPage(offset, pageSize));
-
-        assertEquals("Offset must be a non-negative integer.", exception.getMessage());
-
-        verify(carRepository, never()).findAll();
-
-    }
-
-    @Test
-    void getPage_shouldThrowException_whenInputContainsNegativePageSize() {
-
-        int offset = 10;
-        int pageSize = -10;
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> carService.getPage(offset, pageSize));
-
-        assertEquals("Page size must be a positive integer.", exception.getMessage());
-
-        verify(carRepository, never()).findAll();
-
-    }
-
-    @Test
-    void getById_shouldReturnCar_whenInputContainsExistingCarId() {
-
-        long manufacturerId = 1;
-        String manufacturerName = "Test manufacturer name";
-
-        Manufacturer manufacturer = new Manufacturer();
-
-        manufacturer.setManufacturerId(manufacturerId);
-        manufacturer.setManufacturerName(manufacturerName);
-        manufacturer.setCars(Collections.emptySet());
-
-        long carModelId = 1;
-        String carModelName = "Test car model name";
-
-        CarModel carModel = new CarModel();
-
-        carModel.setCarModelId(carModelId);
-        carModel.setCarModelName(carModelName);
-
-        long categoryId = 1;
-        String categoryName = "Test category name";
-
-        Category category = new Category();
-
-        category.setCategoryId(categoryId);
-        category.setCategoryName(categoryName);
-        category.setCars(Collections.emptySet());
-
-        long carId = 1;
-
-        Car expectedCar = new Car();
-
-        expectedCar.setCarId(carId);
-        expectedCar.setManufacturer(manufacturer);
-        expectedCar.setManufactureYear(2024);
-        expectedCar.setCarModel(carModel);
-        expectedCar.setCategory(category);
-
-        when(carRepository.findById(carId))
-                .thenReturn(Optional.ofNullable(expectedCar));
+        when(carRepository.findById(carId)).thenReturn(Optional.of(car));
 
         Car actualCar = carService.getById(carId);
 
         assertNotNull(actualCar);
-        assertEquals(expectedCar, actualCar);
+        assertEquals(car, actualCar);
 
         verify(carRepository).findById(carId);
-
     }
 
-    @Test
-    void getById_shouldReturnCat_whenInputContainsNotExistingCarId() {
+    @ParameterizedTest
+    @ValueSource(longs = {11L, 20L, 30L, 40L, 50L, 60L, 70L, 80L, 90L, 100L})
+    void getById_shouldThrowException_whenCarDoesNotExist(long carId) {
 
-        long carId = 100;
-
-        when(carRepository.findById(carId))
-                .thenReturn(Optional.empty());
+        when(carRepository.findById(carId)).thenReturn(Optional.empty());
 
         CarNotFoundException exception = assertThrows(CarNotFoundException.class, () -> carService.getById(carId));
 
         assertEquals("Car with Id " + carId + " not found.", exception.getMessage());
 
         verify(carRepository).findById(carId);
-
     }
 
 }

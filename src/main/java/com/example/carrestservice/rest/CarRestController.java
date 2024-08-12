@@ -6,6 +6,9 @@ import com.example.carrestservice.exception.ApiError;
 import com.example.carrestservice.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,52 +17,49 @@ import java.util.List;
 
 @RestController
 public class CarRestController {
-
-    @Autowired
     private CarService carService;
+    public CarRestController(CarService carService) {
+        this.carService = carService;
+    }
+
     @PostMapping("/cars")
-    public ResponseEntity<Car> createCar(@RequestBody Car car) {
-        carService.createCar(car);
-        return new ResponseEntity<>(car, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Car createCar(@RequestBody Car car) {
+        return carService.createCar(car);
     }
 
     @PutMapping("/cars")
-    public ResponseEntity<Car> updateCar(@RequestBody Car car) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateCar(@RequestBody Car car) {
         carService.updateCar(car);
-        return new ResponseEntity<>(car, HttpStatus.OK);
     }
-
     @DeleteMapping("/cars/{id}")
-    public ResponseEntity<Car> removeCarById(@PathVariable("id") Long carId) {
-        Car car = carService.removeById(carId);
-        return new ResponseEntity<>(car, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeCarById(@PathVariable("id") Long carId) {
+        carService.removeById(carId);
     }
 
     @GetMapping("/cars")
-    public ResponseEntity<List<Car>> getCars() {
-        List<Car> carList = carService.getAll();
-        return new ResponseEntity<>(carList, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public Page<Car> getCars(
+            @RequestParam(required = false, defaultValue = "carId") String sortField,
+            @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
+            @RequestParam(required = false, defaultValue = "0") int offset,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
+
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+
+        Sort sort = Sort.by(direction, sortField);
+
+        Pageable pageable = PageRequest.of(offset, pageSize,sort);
+
+        return carService.getAll(pageable);
     }
 
-    @GetMapping("/cars/sort")
-    public ResponseEntity<List<Car>> getSortedCars(@RequestParam(required = false, defaultValue = "carId") String sortField,
-                                           @RequestParam(required = false, defaultValue = "DESC") String sortDirection){
-        List<Car> carList = carService.getAll(sortDirection, sortField);
-        return new ResponseEntity<>(carList, HttpStatus.OK);
-    }
-
-    @GetMapping("/cars/pagination")
-    public ResponseEntity<List<Car>> getCarPage(
-            @RequestParam int offset,
-            @RequestParam int pageSize) {
-
-        Page<Car> carPage = carService.getPage(offset, pageSize);
-        return new ResponseEntity<>(carPage.getContent(), HttpStatus.OK);
-    }
     @GetMapping("/cars/{id}")
-    public ResponseEntity<Car> getCarById(@PathVariable("id") Long carId) {
-        Car car = carService.getById(carId);
-        return new ResponseEntity<>(car, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public Car getCarById(@PathVariable Long id) {
+        return carService.getById(id);
     }
 
 }

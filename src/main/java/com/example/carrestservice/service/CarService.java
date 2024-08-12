@@ -5,8 +5,11 @@ import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Category;
 import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.CarException;
+import com.example.carrestservice.exception.CarModelNameException;
+import com.example.carrestservice.exception.CarModelNotFoundException;
 import com.example.carrestservice.exception.CarNotFoundException;
 import com.example.carrestservice.repository.CarRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,9 +24,11 @@ import java.util.stream.Collectors;
 @Service
 public class CarService {
 
-    @Autowired
     private CarRepository carRepository;
 
+    public CarService(CarRepository carRepository) {
+        this.carRepository = carRepository;
+    }
 
     public Car createCar(Car car) {
 
@@ -38,68 +43,52 @@ public class CarService {
         return carRepository.save(car);
     }
 
-    public Car updateCar(Car car) {
+    @Transactional
+    public void updateCar(Car car) {
 
         if(car == null) {
             throw new IllegalArgumentException("Car cannot be null!");
         }
 
-        Optional<Car> optionalCar = carRepository.findById(car.getCarId());
+        Car updatedCar = carRepository.findById(car.getCarId())
+                .orElseThrow(() -> new CarNotFoundException("Car with Id " + car.getCarId() + " not found."));
 
-        return optionalCar.map(updatedCar -> {
+        Optional.of(car.getCarModel())
+                .filter(carModel -> carRepository.existsByCarModel_CarModelId(carModel.getCarModelId()))
+                .ifPresentOrElse(
+                        carModel -> updatedCar.setCarModel(carModel),
+                        () -> {
+                            throw new CarException("Car model with Id " + car.getCarModel().getCarModelId() + " already exists!");
+                        }
+                );
 
-            updatedCar.setManufacturer(car.getManufacturer());
-            updatedCar.setManufactureYear(car.getManufactureYear());
-            updatedCar.setCarModel(car.getCarModel());
-            updatedCar.setCategory(car.getCategory());
+        updatedCar.setManufacturer(car.getManufacturer());
+        updatedCar.setManufactureYear(car.getManufactureYear());
+        updatedCar.setCategory(car.getCategory());
+    }
 
-            boolean isCarModelTaken = carRepository.existsByCarModel_CarModelId(car.getCarModel().getCarModelId());
+    public void removeById(long carId) {
 
-            if (isCarModelTaken) {
-                throw new CarException("Car with car model Id " + updatedCar.getCarModel().getCarModelId() + " already exist!");
-            }
-
-            return carRepository.save(updatedCar);
-
-        }).orElseThrow(() ->
-                new CarNotFoundException("Car with Id " + car.getCarId() + " not found!")
-        );
+       if(!carRepository.existsByCarId(carId)) {
+           throw new CarNotFoundException("Car with Id " + carId + " not found!");
+       } else {
+            carRepository.deleteById(carId);
+       }
 
     }
 
-    public Car removeById(long carId) {
-        Car car = carRepository.findById(carId)
-                .orElseThrow(() -> new CarNotFoundException("Car with Id " + carId + " not found."));
+    public Page<Car> getAll(Pageable pageable) {
 
-        carRepository.deleteById(carId);
-
-        return car;
-    }
-
-    public List<Car> getAll() {
-        return carRepository.findAll();
-    }
-
-    public List<Car> getAll(String sortDirection, String sortField) {
-
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-
-        Sort sort = Sort.by(direction, sortField);
-        return carRepository.findAll(sort);
-    }
-
-    public Page<Car> getPage(int offset, int pageSize) {
-
-        if (offset < 0) {
+        if (pageable.getOffset() < 0) {
             throw new IllegalArgumentException("Offset must be a non-negative integer.");
         }
-        if (pageSize <= 0) {
+        if (pageable.getPageSize() <= 0) {
             throw new IllegalArgumentException("Page size must be a positive integer.");
         }
 
-        Pageable pageable = PageRequest.of(offset, pageSize);
         return carRepository.findAll(pageable);
     }
+
 
     public Car getById(long carId) {
         return carRepository.findById(carId)
