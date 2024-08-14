@@ -5,7 +5,7 @@ import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Category;
 import com.example.carrestservice.entity.Manufacturer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql", "/sql/insert_cars.sql"})
+@Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_car_models.sql", "/sql/insert_categories.sql", "/sql/insert_manufacturers.sql"})
 public class CarRestControllerIntegrationTest {
 
     @Autowired
@@ -29,10 +29,10 @@ public class CarRestControllerIntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    static Car car;
+    Car car;
 
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    public void setUp() {
         CarModel carModel = new CarModel();
         carModel.setCarModelId(10L);
         carModel.setCarModelName("Test");
@@ -45,7 +45,7 @@ public class CarRestControllerIntegrationTest {
         manufacturer.setManufacturerId(1L);
         manufacturer.setManufacturerName("Test");
 
-        car = new Car.CarBuilder()
+        car = Car.builder()
                 .carId(1L)
                 .manufacturer(manufacturer)
                 .manufactureYear(2024)
@@ -55,43 +55,74 @@ public class CarRestControllerIntegrationTest {
     }
 
     @Test
+
     public void createCar_shouldReturnCreatedRequest() throws Exception {
         mockMvc.perform(post("/cars")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.carId").value(1));
+                .andExpect(jsonPath("$.carId").exists());
     }
 
     @Test
-    public void updateCar_shouldReturnConflictRequest() throws Exception {
+    public void updateCar_shouldReturnNoContentRequest() throws Exception {
+
+        mockMvc.perform(post("/cars")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(car)))
+                .andExpect(status().isCreated());
+
         mockMvc.perform(put("/cars")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isNoContent());
     }
 
     @Test
     public void removeCarById_shouldReturnNoContentRequest() throws Exception {
-        mockMvc.perform(delete("/cars/1"))
+
+        String response = mockMvc.perform(post("/cars")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(car)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long carId = objectMapper.readTree(response).get("carId").asLong();
+
+        mockMvc.perform(delete("/cars/" + carId))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     public void getCars_shouldReturnOKRequest() throws Exception {
+
+        mockMvc.perform(post("/cars")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(car)))
+                .andExpect(status().isCreated());
+
         mockMvc.perform(get("/cars")
                         .param("sortField", "carId")
                         .param("sortDirection", "ASC")
                         .param("offset", "0")
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].carId").value(1));
+                .andExpect(jsonPath("$.content[0].carId").exists());
     }
 
     @Test
     public void getCarById_shouldReturnOKRequest() throws Exception {
-        mockMvc.perform(get("/cars/1"))
+
+        String response = mockMvc.perform(post("/cars")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(car)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long carId = objectMapper.readTree(response).get("carId").asLong();
+
+        mockMvc.perform(get("/cars/" + carId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carId").value(1));
+                .andExpect(jsonPath("$.carId").value(carId));
     }
 }

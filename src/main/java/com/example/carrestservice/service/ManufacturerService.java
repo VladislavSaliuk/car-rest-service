@@ -1,23 +1,14 @@
 package com.example.carrestservice.service;
 
-import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Manufacturer;
-import com.example.carrestservice.exception.CarModelNameException;
 import com.example.carrestservice.exception.ManufacturerNameException;
 import com.example.carrestservice.exception.ManufacturerNotFoundException;
 import com.example.carrestservice.repository.ManufacturerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ManufacturerService {

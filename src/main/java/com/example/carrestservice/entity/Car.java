@@ -1,8 +1,19 @@
 package com.example.carrestservice.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +24,10 @@ import java.io.Serializable;
 @Entity
 @Getter
 @Setter
+@Builder
 @Table(name = "cars")
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Car implements Serializable {
 
@@ -43,52 +56,6 @@ public class Car implements Serializable {
     @EqualsAndHashCode.Exclude
     @JoinColumn(name = "category_id")
     private Category category;
-
-    public Car(CarBuilder carBuilder) {
-        this.carId = carBuilder.carId;
-        this.manufacturer = carBuilder.manufacturer;
-        this.manufactureYear = carBuilder.manufactureYear;
-        this.carModel = carBuilder.carModel;
-        this.category = carBuilder.category;
-    }
-
-    public static class CarBuilder {
-        private long carId;
-        private Manufacturer manufacturer;
-        private int manufactureYear;
-        private CarModel carModel;
-        private Category category;
-
-        public CarBuilder carId(long carId) {
-            this.carId = carId;
-            return this;
-        }
-
-        public CarBuilder manufacturer(Manufacturer manufacturer) {
-            this.manufacturer = manufacturer;
-            return this;
-        }
-
-        public CarBuilder manufactureYear(int manufactureYear) {
-            this.manufactureYear = manufactureYear;
-            return this;
-        }
-
-        public CarBuilder carModel(CarModel carModel) {
-            this.carModel = carModel;
-            return this;
-        }
-
-        public CarBuilder category(Category category) {
-            this.category = category;
-            return this;
-        }
-
-        public Car build() {
-            return new Car(this);
-        }
-
-    }
 
 
 }

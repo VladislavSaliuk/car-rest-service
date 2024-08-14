@@ -1,66 +1,74 @@
 package com.example.carrestservice.exception;
 
 
-import com.example.carrestservice.entity.Category;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(CarException.class)
-    public ResponseEntity<ApiError> handleCarException(CarException e) {
-        ApiError apiError = new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    public ApiError handleCarException(CarException e) {
+        return new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(CarModelNameException.class)
-    public ResponseEntity<ApiError> handleCarModelNameException(CarModelNameException e) {
-        ApiError apiError = new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    public ApiError handleCarModelNameException(CarModelNameException e) {
+        return new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(CarModelNotFoundException.class)
-    public ResponseEntity<ApiError> handleCarModelNotFoundException(CarModelNotFoundException e) {
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    public ApiError handleCarModelNotFoundException(CarModelNotFoundException e) {
+        return new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(CarNotFoundException.class)
-    public ResponseEntity<ApiError> handleCarNotFoundException(CarNotFoundException e) {
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    public ApiError handleCarNotFoundException(CarNotFoundException e) {
+        return new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
-
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(CategoryNameException.class)
-    public ResponseEntity<ApiError> handleCategoryNameException(CategoryNameException e) {
-        ApiError apiError = new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    public ApiError handleCategoryNameException(CategoryNameException e) {
+        return new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(CategoryNotFoundException.class)
-    public ResponseEntity<ApiError> handleCategoryNotFoundException(CategoryNotFoundException e) {
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    public ApiError handleCategoryNotFoundException(CategoryNotFoundException e) {
+        return new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ManufacturerNameException.class)
-    public ResponseEntity<ApiError> handleManufacturerNameException(ManufacturerNameException e) {
-        ApiError apiError = new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    public ApiError handleManufacturerNameException(ManufacturerNameException e) {
+        return new ApiError(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ManufacturerNotFoundException.class)
-    public ResponseEntity<ApiError> handleManufacturerNotFoundException(ManufacturerNotFoundException e) {
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    public ApiError handleManufacturerNotFoundException(ManufacturerNotFoundException e) {
+        return new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
-
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException e) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    public ApiError handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ApiError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
     }
 
 }

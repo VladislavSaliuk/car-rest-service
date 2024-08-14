@@ -2,7 +2,7 @@ package com.example.carrestservice.rest;
 
 import com.example.carrestservice.entity.Category;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Sql(scripts = {"/sql/drop_data.sql","/sql/insert_categories.sql"})
+@Sql(scripts = {"/sql/drop_data.sql", "/sql/insert_categories.sql"})
 public class CategoryRestControllerIntegrationTest {
 
     @Autowired
@@ -25,18 +25,17 @@ public class CategoryRestControllerIntegrationTest {
 
     @Autowired
     ObjectMapper objectMapper;
+    Category category;
 
-    static Category category;
-
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    public void setUp() {
         category = new Category();
         category.setCategoryId(1L);
         category.setCategoryName("Test");
     }
 
     @Test
-    public void createCategory_shouldReturnCreatedRequest() throws Exception {
+    public void createCategory_shouldReturnCreatedStatus() throws Exception {
         mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
@@ -46,7 +45,8 @@ public class CategoryRestControllerIntegrationTest {
     }
 
     @Test
-    public void updateCategory_shouldReturnNoContentRequest() throws Exception {
+    public void updateCategory_shouldReturnNoContentStatus() throws Exception {
+
         mockMvc.perform(put("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(category)))
@@ -54,13 +54,26 @@ public class CategoryRestControllerIntegrationTest {
     }
 
     @Test
-    public void removeCategoryById_shouldReturnNoContentRequest() throws Exception {
-        mockMvc.perform(delete("/categories/1"))
+    public void removeCategoryById_shouldReturnNoContentStatus() throws Exception {
+        String response = mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(category)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long categoryId = objectMapper.readTree(response).get("categoryId").asLong();
+
+        mockMvc.perform(delete("/categories/" + categoryId))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    public void getCategories_shouldReturnOKRequest() throws Exception {
+    public void getCategories_shouldReturnOKStatus() throws Exception {
+        mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(category)))
+                .andExpect(status().isCreated());
+
         mockMvc.perform(get("/categories")
                         .param("sortField", "categoryId")
                         .param("sortDirection", "ASC")
@@ -71,10 +84,18 @@ public class CategoryRestControllerIntegrationTest {
     }
 
     @Test
-    public void getCategoryById_shouldReturnOKRequest() throws Exception {
-        mockMvc.perform(get("/categories/1"))
+    public void getCategoryById_shouldReturnOKStatus() throws Exception {
+        String response = mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(category)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long categoryId = objectMapper.readTree(response).get("categoryId").asLong();
+
+        mockMvc.perform(get("/categories/" + categoryId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.categoryId").value(1))
-                .andExpect(jsonPath("$.categoryName").value("Sedan"));
+                .andExpect(jsonPath("$.categoryId").value(categoryId))
+                .andExpect(jsonPath("$.categoryName").value("Test"));
     }
 }

@@ -24,8 +24,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class CarServiceTest {
@@ -53,7 +60,7 @@ public class CarServiceTest {
         manufacturer.setManufacturerId(1L);
         manufacturer.setManufacturerName("Test");
 
-        car = new Car.CarBuilder()
+        car = Car.builder()
                 .carId(1L)
                 .manufacturer(manufacturer)
                 .manufactureYear(2024)

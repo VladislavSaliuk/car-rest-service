@@ -2,7 +2,7 @@ package com.example.carrestservice.rest;
 
 import com.example.carrestservice.entity.Manufacturer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,17 +26,17 @@ public class ManufacturerRestControllerIntegrationTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    static Manufacturer manufacturer;
+    Manufacturer manufacturer;
 
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    public void setUp() {
         manufacturer = new Manufacturer();
         manufacturer.setManufacturerId(1L);
         manufacturer.setManufacturerName("Test");
     }
 
     @Test
-    public void createManufacturer_shouldReturnCreatedRequest() throws Exception {
+    public void createManufacturer_shouldReturnCreatedStatus() throws Exception {
         mockMvc.perform(post("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
@@ -46,7 +46,8 @@ public class ManufacturerRestControllerIntegrationTest {
     }
 
     @Test
-    public void updateManufacturer_shouldReturnNoContentRequest() throws Exception {
+    public void updateManufacturer_shouldReturnNoContentStatus() throws Exception {
+
         mockMvc.perform(put("/manufacturers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(manufacturer)))
@@ -54,13 +55,26 @@ public class ManufacturerRestControllerIntegrationTest {
     }
 
     @Test
-    public void removeManufacturerById_shouldReturnNoContentRequest() throws Exception {
-        mockMvc.perform(delete("/manufacturers/1"))
+    public void removeManufacturerById_shouldReturnNoContentStatus() throws Exception {
+        String response = mockMvc.perform(post("/manufacturers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(manufacturer)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long manufacturerId = objectMapper.readTree(response).get("manufacturerId").asLong();
+
+        mockMvc.perform(delete("/manufacturers/" + manufacturerId))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    public void getManufacturers_shouldReturnOKRequest() throws Exception {
+    public void getManufacturers_shouldReturnOKStatus() throws Exception {
+        mockMvc.perform(post("/manufacturers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(manufacturer)))
+                .andExpect(status().isCreated());
+
         mockMvc.perform(get("/manufacturers")
                         .param("sortField", "manufacturerId")
                         .param("sortDirection", "ASC")
@@ -71,10 +85,18 @@ public class ManufacturerRestControllerIntegrationTest {
     }
 
     @Test
-    public void getManufacturerById_shouldReturnOKRequest() throws Exception {
-        mockMvc.perform(get("/manufacturers/1"))
+    public void getManufacturerById_shouldReturnOKStatus() throws Exception {
+        String response = mockMvc.perform(post("/manufacturers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(manufacturer)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Long manufacturerId = objectMapper.readTree(response).get("manufacturerId").asLong();
+
+        mockMvc.perform(get("/manufacturers/" + manufacturerId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.manufacturerId").value(1))
-                .andExpect(jsonPath("$.manufacturerName").value("Toyota"));
+                .andExpect(jsonPath("$.manufacturerId").value(manufacturerId))
+                .andExpect(jsonPath("$.manufacturerName").value("Test"));
     }
 }

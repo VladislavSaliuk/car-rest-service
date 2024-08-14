@@ -1,25 +1,15 @@
 package com.example.carrestservice.service;
 
 import com.example.carrestservice.entity.Car;
-import com.example.carrestservice.entity.CarModel;
-import com.example.carrestservice.entity.Category;
-import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.CarException;
-import com.example.carrestservice.exception.CarModelNameException;
-import com.example.carrestservice.exception.CarModelNotFoundException;
 import com.example.carrestservice.exception.CarNotFoundException;
 import com.example.carrestservice.repository.CarRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class CarService {
