@@ -80,4 +80,5 @@ public class CarModelService {
                 .orElseThrow(() -> new CarModelNotFoundException("Car model with Id " + carModelId + " not found."));
     }
 
+
 }
