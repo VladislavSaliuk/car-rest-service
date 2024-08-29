@@ -27,9 +27,7 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET).permitAll()
-                        .requestMatchers(HttpMethod.POST).authenticated()
-                        .requestMatchers(HttpMethod.DELETE).authenticated()
-                        .requestMatchers(HttpMethod.PUT).authenticated()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2Login ->

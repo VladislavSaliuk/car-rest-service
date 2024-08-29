@@ -27,7 +27,7 @@ public class CarModelService {
         }
 
         if(carModelRepository.existsByCarModelName(carModel.getCarModelName())) {
-            throw new CarModelNotFoundException("Car model name " + carModel.getCarModelName() + " already exists!");
+            throw new CarModelNameException("Car model name " + carModel.getCarModelName() + " already exists!");
         }
 
         return carModelRepository.save(carModel);

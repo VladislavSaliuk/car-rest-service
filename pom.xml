@@ -97,7 +97,7 @@
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.11.5</version> <!-- або остання стабільна версія -->
+			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
         <dependency>
@@ -105,8 +105,12 @@
             <artifactId>jakarta.servlet-api</artifactId>
             <version>4.0.3</version>
         </dependency>
-
-    </dependencies>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
