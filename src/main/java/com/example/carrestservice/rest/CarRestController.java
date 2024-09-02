@@ -1,6 +1,7 @@
 package com.example.carrestservice.rest;
 
 import com.example.carrestservice.entity.Car;
+import com.example.carrestservice.exception.ApiError;
 import com.example.carrestservice.service.CarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,8 +31,10 @@ public class CarRestController {
             @ApiResponse(responseCode = "201", description = "car was created",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Car.class)) }),
-            @ApiResponse(responseCode = "401", description = "car can not be null", content = @Content),
-            @ApiResponse(responseCode = "409", description = "car with this car model id already exists", content = @Content)
+            @ApiResponse(responseCode = "401", description = "car can not be null", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "409", description = "car with this car model id already exists", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @PostMapping("/cars")
     @ResponseStatus(HttpStatus.CREATED)
@@ -45,8 +48,10 @@ public class CarRestController {
             @ApiResponse(responseCode = "204", description = "car was updated",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Car.class))}),
-            @ApiResponse(responseCode = "401", description = "car can not be null", content = @Content),
-            @ApiResponse(responseCode = "409", description = "car with this car model id already exists", content = @Content)
+            @ApiResponse(responseCode = "401", description = "car can not be null", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "409", description = "car with this car model id already exists", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @PutMapping("/cars")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -59,7 +64,8 @@ public class CarRestController {
             @ApiResponse(responseCode = "204", description = "car was removed",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Car.class))}),
-            @ApiResponse(responseCode = "404", description = "car with this id not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "car with this id not found", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @DeleteMapping("/cars/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -72,8 +78,10 @@ public class CarRestController {
             @ApiResponse(responseCode = "200",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Car.class))}),
-            @ApiResponse(responseCode = "401", description = "offset must be a non-negative integer", content = @Content),
-            @ApiResponse(responseCode = "401", description = "page size must be a positive integer", content = @Content),
+            @ApiResponse(responseCode = "401", description = "offset must be a non-negative integer", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "401", description = "page size must be a positive integer", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
     })
     @GetMapping("/cars")
     @ResponseStatus(HttpStatus.OK)
@@ -101,7 +109,8 @@ public class CarRestController {
             @ApiResponse(responseCode = "200", description = "car was found",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Car.class))}),
-            @ApiResponse(responseCode = "404", description = "car with this id not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "car with this id not found", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @GetMapping("/cars/{id}")
     @ResponseStatus(HttpStatus.OK)

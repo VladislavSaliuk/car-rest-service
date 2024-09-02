@@ -2,6 +2,7 @@ package com.example.carrestservice.rest;
 
 import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.entity.Manufacturer;
+import com.example.carrestservice.exception.ApiError;
 import com.example.carrestservice.service.ManufacturerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,8 +34,10 @@ public class ManufacturerRestController {
             @ApiResponse(responseCode = "201", description = "manufacturer was created",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Manufacturer.class)) }),
-            @ApiResponse(responseCode = "401", description = "manufacturer can not be null", content = @Content),
-            @ApiResponse(responseCode = "409", description = "manufacturer with this name already exist", content = @Content)
+            @ApiResponse(responseCode = "401", description = "manufacturer can not be null", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "409", description = "manufacturer with this name already exist", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @PostMapping("/manufacturers")
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,8 +50,10 @@ public class ManufacturerRestController {
             @ApiResponse(responseCode = "204", description = "manufacturer was updated",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Manufacturer.class))}),
-            @ApiResponse(responseCode = "401", description = "manufacturer can not be null", content = @Content),
-            @ApiResponse(responseCode = "409", description = "manufacturer with this name already exist", content = @Content)
+            @ApiResponse(responseCode = "401", description = "manufacturer can not be null", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "409", description = "manufacturer with this name already exist", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @PutMapping("/manufacturers")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -62,7 +67,8 @@ public class ManufacturerRestController {
             @ApiResponse(responseCode = "204", description = "manufacturer was removed",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Manufacturer.class))}),
-            @ApiResponse(responseCode = "404", description = "manufacturer with this id not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "manufacturer with this id not found", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @DeleteMapping("manufacturers/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -76,8 +82,10 @@ public class ManufacturerRestController {
             @ApiResponse(responseCode = "200",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Manufacturer.class))}),
-            @ApiResponse(responseCode = "401", description = "offset must be a non-negative integer", content = @Content),
-            @ApiResponse(responseCode = "401", description = "page size must be a positive integer", content = @Content),
+            @ApiResponse(responseCode = "401", description = "offset must be a non-negative integer", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "401", description = "page size must be a positive integer", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
     })
     @GetMapping("/manufacturers")
     @ResponseStatus(HttpStatus.OK)
@@ -107,7 +115,8 @@ public class ManufacturerRestController {
             @ApiResponse(responseCode = "200", description = "manufacturer was found",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = CarModel.class))}),
-            @ApiResponse(responseCode = "404", description = "manufacturer with this id not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "manufacturer with this id not found", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @GetMapping("/manufacturers/{id}")
     @ResponseStatus(HttpStatus.OK)

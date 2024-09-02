@@ -1,6 +1,7 @@
 package com.example.carrestservice.rest;
 
 import com.example.carrestservice.entity.Category;
+import com.example.carrestservice.exception.ApiError;
 import com.example.carrestservice.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,8 +32,10 @@ public class CategoryRestController {
             @ApiResponse(responseCode = "201", description = "category was created",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Category.class)) }),
-            @ApiResponse(responseCode = "401", description = "category can not be null", content = @Content),
-            @ApiResponse(responseCode = "409", description = "category with this name already exist", content = @Content)
+            @ApiResponse(responseCode = "401", description = "category can not be null", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "409", description = "category with this name already exist", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -45,8 +48,10 @@ public class CategoryRestController {
             @ApiResponse(responseCode = "204", description = "category was updated",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Category.class))}),
-            @ApiResponse(responseCode = "401", description = "category can not be null", content = @Content),
-            @ApiResponse(responseCode = "409", description = "category with this name already exist", content = @Content)
+            @ApiResponse(responseCode = "401", description = "category can not be null", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "409", description = "category with this name already exist", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @PutMapping("/categories")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -60,7 +65,8 @@ public class CategoryRestController {
             @ApiResponse(responseCode = "204", description = "category was removed",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Category.class))}),
-            @ApiResponse(responseCode = "404", description = "category with this id not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "category with this id not found", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @DeleteMapping("/categories/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -74,8 +80,10 @@ public class CategoryRestController {
             @ApiResponse(responseCode = "200",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Category.class))}),
-            @ApiResponse(responseCode = "401", description = "offset must be a non-negative integer", content = @Content),
-            @ApiResponse(responseCode = "401", description = "page size must be a positive integer", content = @Content),
+            @ApiResponse(responseCode = "401", description = "offset must be a non-negative integer", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
+            @ApiResponse(responseCode = "401", description = "page size must be a positive integer", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))}),
     })
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
@@ -104,7 +112,8 @@ public class CategoryRestController {
             @ApiResponse(responseCode = "200", description = "category was found",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Category.class))}),
-            @ApiResponse(responseCode = "404", description = "category with this id not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "category with this id not found", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ApiError.class))})
     })
     @GetMapping("/categories/{id}")
     @ResponseStatus(HttpStatus.OK)
