@@ -21,13 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class CarModelServiceTest {
@@ -97,7 +92,7 @@ public class CarModelServiceTest {
         when(carModelRepository.existsByCarModelName(carModel.getCarModelName()))
                 .thenReturn(true);
 
-        CarModelNotFoundException exception = assertThrows(CarModelNotFoundException.class, () -> carModelService.createCarModel(carModel));
+        CarModelNameException exception = assertThrows(CarModelNameException.class, () -> carModelService.createCarModel(carModel));
 
         assertEquals("Car model name " + carModel.getCarModelName() + " already exists!", exception.getMessage());
 

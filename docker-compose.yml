@@ -2,7 +2,7 @@ version: '2'
 
 services:
   app:
-    image: '13357c8091ae'
+    image: '1aee4c20658b'
     build:
       context: docker
     container_name: application
