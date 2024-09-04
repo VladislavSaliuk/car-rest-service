@@ -6,12 +6,13 @@ import com.example.carrestservice.exception.CarModelNotFoundException;
 import com.example.carrestservice.repository.CarModelRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,13 +25,12 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith({MockitoExtension.class})
 public class CarModelServiceTest {
 
-    @Autowired
+    @InjectMocks
     CarModelService carModelService;
-
-    @MockBean
+    @Mock
     CarModelRepository carModelRepository;
     static CarModel carModel;
     @BeforeAll
