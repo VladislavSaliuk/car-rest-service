@@ -2,9 +2,8 @@ version: '2'
 
 services:
   app:
-    image: '1aee4c20658b'
     build:
-      context: docker
+      context: .
     container_name: application
     expose:
       - '8080'

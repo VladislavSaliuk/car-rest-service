@@ -4,7 +4,7 @@ import com.example.carrestservice.entity.CarModel;
 import com.example.carrestservice.exception.CarModelNameException;
 import com.example.carrestservice.exception.CarModelNotFoundException;
 import com.example.carrestservice.repository.CarModelRepository;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,9 +32,10 @@ public class CarModelServiceTest {
     CarModelService carModelService;
     @Mock
     CarModelRepository carModelRepository;
-    static CarModel carModel;
-    @BeforeAll
-    static void init() {
+    CarModel carModel;
+
+    @BeforeEach
+    void setUp() {
         carModel = new CarModel();
         carModel.setCarModelId(1L);
         carModel.setCarModelName("Test");

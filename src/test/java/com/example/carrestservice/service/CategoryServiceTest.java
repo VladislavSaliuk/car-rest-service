@@ -4,7 +4,7 @@ import com.example.carrestservice.entity.Category;
 import com.example.carrestservice.exception.CategoryNameException;
 import com.example.carrestservice.exception.CategoryNotFoundException;
 import com.example.carrestservice.repository.CategoryRepository;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,10 +34,10 @@ public class CategoryServiceTest {
     @Mock
     CategoryRepository categoryRepository;
 
-    static Category category;
+    Category category;
 
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    void setUp() {
         category = new Category();
         category.setCategoryId(1L);
         category.setCategoryName("Test");

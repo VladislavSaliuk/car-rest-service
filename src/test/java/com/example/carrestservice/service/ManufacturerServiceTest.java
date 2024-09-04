@@ -4,7 +4,7 @@ import com.example.carrestservice.entity.Manufacturer;
 import com.example.carrestservice.exception.ManufacturerNameException;
 import com.example.carrestservice.exception.ManufacturerNotFoundException;
 import com.example.carrestservice.repository.ManufacturerRepository;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,10 +34,10 @@ public class ManufacturerServiceTest {
     @Mock
     ManufacturerRepository manufacturerRepository;
 
-    static Manufacturer manufacturer;
+    Manufacturer manufacturer;
 
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    void setUp() {
         manufacturer = new Manufacturer();
         manufacturer.setManufacturerId(1L);
         manufacturer.setManufacturerName("Test");
